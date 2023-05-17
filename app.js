@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config();
 const app = express();
 const request = require('request-promise-native');
 const NodeCache = require('node-cache');
@@ -15,7 +16,7 @@ credentials: true,}));
 const CLIENT_ID = '94a8188f-5484-474f-b8a4-5eb80fc5d5db';
 const CLIENT_SECRET = 'c7f173fa-411e-480a-b5e9-d90a0c01a385';
 
-PORT = 5001;
+PORT = process.env.PORT || 5001;
 
 // Scopes for this app will default to `crm.objects.contacts.read`
 // To request others, set the SCOPE environment variable instead
