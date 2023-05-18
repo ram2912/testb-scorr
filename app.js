@@ -336,7 +336,7 @@ app.post('/webhook', async (req, res) => {
       // Retrieve the deal using the HubSpot API
       const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
       const dealName = deal.properties.dealname;
-      const currentStage = deal.properties.dealstage;
+     
   
       // Send a JSON response with deal name, current stage, and previous stage
       console.log(res.json({ dealName, currentStage, previousStage }));
