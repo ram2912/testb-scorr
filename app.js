@@ -317,13 +317,15 @@ app.get('/', async (req, res) => {
   res.end();
 });
 
+app.use(express.json());
+
 app.post('/webhook', async (req, res) => {
     try {
       const accessToken = await getAccessToken(req.sessionID);
       const hubspotClient = new hubspot.Client({ accessToken });
       
       // Log the incoming request
-      console.log('Received webhook:', req.body);
+      console.log('Received webhook:', JSON.stringify(req.body));
   
       res.sendStatus(200);
     } catch (error) {
