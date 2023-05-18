@@ -324,27 +324,28 @@ app.post('/webhook', async (req, res) => {
       const accessToken = await getAccessToken(req.sessionID);
       const hubspotClient = new hubspot.Client({ accessToken });
   
-      // Log the incoming request body as JSON
-      console.log('Received webhook:', JSON.stringify(req.body));
+      // Log the incoming request
+      console.log('Received webhook:', req.body);
   
-      // Extract relevant data from the webhook payload
-      const eventData = req.body[0]; // Assuming there's only one event in the payload
-      const dealId = eventData.objectId;
-      const propertyName = eventData.propertyName;
-      const previousStage = eventData.properties[propertyName].oldValue;
+      // Extract the relevant data from the request body
+      const eventId = req.body.eventId;
+      const subscriptionId = req.body.subscriptionId;
+      const dealName = req.body.dealName;
+      const currentStage = req.body.currentStage;
+      const previousStage = req.body.previousStage;
   
-      // Retrieve the deal using the HubSpot API
-      const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
-      const dealName = deal.properties.dealname;
-      const currentStage = deal.properties.dealstage;
+      // Display the data on the console
+      console.log('Deal Name:', dealName);
+      console.log('Current Stage:', currentStage);
+      console.log('Previous Stage:', previousStage);
   
-      // Send a JSON response with deal name, current stage, and previous stage
-      res.json({ dealName, currentStage, previousStage });
+      res.sendStatus(200);
     } catch (error) {
       console.error('Error handling webhook:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.sendStatus(500);
     }
   });
+  
   
   
 
