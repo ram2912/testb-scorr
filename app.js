@@ -318,6 +318,7 @@ app.get('/', async (req, res) => {
 });
 
 app.use(express.json());
+let webhookDealId;
 
 app.post('/webhook', async (req, res) => {
     try {
@@ -329,19 +330,31 @@ app.post('/webhook', async (req, res) => {
   
       // Extract relevant data from the webhook payload
       const eventData = req.body[0]; // Assuming there's only one event in the payload
-      const dealId = eventData.objectId;
-      
+      webhookDealId = eventData.objectId; // Store the dealId
   
-      // Retrieve the deal using the HubSpot API
-      const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
-      console.log(JSON.stringify(deal, null, 2));
+      res.sendStatus(200);
     } catch (error) {
       console.error('Error handling webhook:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+      res.sendStatus(500);
     }
   });
   
+  app.get('/deals', async (req, res) => {
+    try {
+      const accessToken = await getAccessToken(req.sessionID);
+      const hubspotClient = new hubspot.Client({ accessToken });
   
+      // Retrieve the deal using the stored dealId
+      const deal = await hubspotClient.crm.deals.basicApi.getById(webhookDealId);
+      console.log(JSON.stringify(deal, null, 2));
+  
+      // Send the deal data as a JSON response
+      res.json(deal);
+    } catch (error) {
+      console.error('Error retrieving deal:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
   
 
 app.get('/error', (req, res) => {
