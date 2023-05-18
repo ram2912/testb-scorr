@@ -319,40 +319,11 @@ app.get('/', async (req, res) => {
 
 app.post('/webhook', async (req, res) => {
     try {
-      const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
+      const accessToken = await getAccessToken(req.sessionID);
       const hubspotClient = new hubspot.Client({ accessToken });
-      const signatureVersion = req.headers['x-hubspot-signature-version'];
-      const signature = req.headers['x-hubspot-signature'];
-      const requestBody = JSON.stringify(req.body);
-  
-      // Verify the signature version
-      if (signatureVersion !== 'v1') {
-        console.error('Invalid signature version');
-        return res.status(400).send('Invalid signature version');
-      }
-  
-      // Calculate the expected hash
-      const sourceString = CLIENT_SECRET + requestBody;
-      const expectedHash = crypto.createHash('sha256').update(sourceString).digest('hex');
-  
-      // Compare the expected hash with the received signature
-      if (signature !== expectedHash) {
-        console.error('Invalid signature');
-        return res.status(401).send('Invalid signature');
-      }
-  
-      // Signature is valid, continue processing the webhook
-  
+      
       // Log the incoming request
-      res.json(req.body);
-  
-      // Extract relevant data from the request body and perform actions
-      const eventId = req.body.eventId;
-      const subscriptionId = req.body.subscriptionId;
-      // ... extract more data as needed
-  
-      // Perform any custom processing or actions based on the webhook data
-      // ...
+      res.json(req.body)
   
       res.sendStatus(200);
     } catch (error) {
@@ -360,6 +331,7 @@ app.post('/webhook', async (req, res) => {
       res.sendStatus(500);
     }
   });
+  
   
 
 app.get('/error', (req, res) => {
