@@ -8,6 +8,7 @@ const hubspot = require('@hubspot/api-client');
 const cors = require('cors');
 const crypto = require('crypto');
 const { Pool } = require('pg');
+const { v4: uuidv4 } = require('uuid');
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
