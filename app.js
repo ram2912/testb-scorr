@@ -412,10 +412,13 @@ app.post('/webhook', async (req, res) => {
       const query = `
       INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      ON CONFLICT DO NOTHING
     `;
+
+    // Generate a new UUID for the id column
+    const id = uuidv4();
+
     const values = [
-      deal.id,
+      id,
       deal.properties.amount,
       deal.properties.closedate,
       deal.properties.createdate,
@@ -425,7 +428,6 @@ app.post('/webhook', async (req, res) => {
       deal.properties.hs_object_id,
       deal.properties.pipeline
     ];
-
 
     await pool.query(query, values);
       // Send the deal data as a JSON response
