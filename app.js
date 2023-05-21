@@ -7,6 +7,15 @@ const session = require('express-session');
 const hubspot = require('@hubspot/api-client');
 const cors = require('cors');
 const crypto = require('crypto');
+const mysql = require('mysql2');
+
+const pool = mysql.createPool({
+    host: 'localhost',        // Your MySQL server hostname
+    port: 3306,               // Port number (default is 3306)
+    user: 'root',    // Your MySQL username
+    password:'ramram123',// Your MySQL password
+    database: 'test-hubspot' // Your MySQL database name
+  });
 
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
@@ -347,9 +356,29 @@ app.post('/webhook', async (req, res) => {
       // Retrieve the deal using the stored dealId
       const deal = await hubspotClient.crm.deals.basicApi.getById(webhookDealId);
       console.log(JSON.stringify(deal, null, 2));
-  
-      // Send the deal data as a JSON response
+
+      pool.getConnection((err, connection) => {
+        if (err) {
+          console.error('Error connecting to the database:', err);
+          res.status(500).json({ error: 'Internal Server Error' });
+          return;
+        }
+
+        const sql = 'INSERT INTO deals (dealId, dealName, ...otherColumns) VALUES (?, ?, ...otherValues)';
+        const values = [deal.dealId, deal.dealName, ...otherValues];
+
+      connection.query(sql, values, (error, results) => {
+        connection.release();
+      if (error) {
+        console.error('Error inserting deal into the database:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+        return;
+      }
+
+      console.log('Deal inserted into the database');
       res.json(deal);
+    });
+  });
     } catch (error) {
       console.error('Error retrieving deal:', error);
       res.status(500).json({ error: 'Internal Server Error' });
