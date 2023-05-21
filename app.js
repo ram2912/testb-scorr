@@ -7,15 +7,67 @@ const session = require('express-session');
 const hubspot = require('@hubspot/api-client');
 const cors = require('cors');
 const crypto = require('crypto');
-const mysql = require('mysql2');
+const { Pool } = require('pg');
 
-const pool = mysql.createPool({
-    host: 'localhost',        // Your MySQL server hostname
-    port: 3306,               // Port number (default is 3306)
-    user: 'root',    // Your MySQL username
-    password:'ramram123',// Your MySQL password
-    database: 'test-hubspot' // Your MySQL database name
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false // This is needed for local development, remove it for production
+    }
   });
+
+  async function checkDealsTableExists() {
+    try {
+      const query = `
+        SELECT EXISTS (
+          SELECT 1
+          FROM information_schema.tables
+          WHERE table_name = 'deals'
+        )
+      `;
+  
+      const result = await pool.query(query);
+      return result.rows[0].exists;
+    } catch (error) {
+      console.error('Error checking if "deals" table exists:', error);
+      return false;
+    }
+  }
+  
+  // Function to create the 'deals' table
+  async function createDealsTable() {
+    try {
+      const query = `
+        CREATE TABLE deals (
+          id VARCHAR(255) PRIMARY KEY,
+          amount DECIMAL,
+          closedate TIMESTAMP,
+          createdate TIMESTAMP,
+          dealname VARCHAR(255),
+          dealstage VARCHAR(255),
+          hs_lastmodifieddate TIMESTAMP,
+          hs_object_id VARCHAR(255),
+          pipeline VARCHAR(255)
+        )
+      `;
+  
+      await pool.query(query);
+      console.log('The "deals" table has been created successfully.');
+    } catch (error) {
+      console.error('Error creating "deals" table:', error);
+    }
+  }
+  
+  // Function to set up the 'deals' table if it doesn't exist
+  async function setupDealsTable() {
+    const tableExists = await checkDealsTableExists();
+    if (!tableExists) {
+      await createDealsTable();
+    }
+  }
+  
+  // Call the function to set up the 'deals' table
+  setupDealsTable();
 
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
@@ -357,28 +409,25 @@ app.post('/webhook', async (req, res) => {
       const deal = await hubspotClient.crm.deals.basicApi.getById(webhookDealId);
       console.log(JSON.stringify(deal, null, 2));
 
-      pool.getConnection((err, connection) => {
-        if (err) {
-          console.error('Error connecting to the database:', err);
-          res.status(500).json({ error: 'Internal Server Error' });
-          return;
-        }
+      const query = `
+      INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `;
+    const values = [
+      deal.id,
+      deal.properties.amount,
+      deal.properties.closedate,
+      deal.properties.createdate,
+      deal.properties.dealname,
+      deal.properties.dealstage,
+      deal.properties.hs_lastmodifieddate,
+      deal.properties.hs_object_id,
+      deal.properties.pipeline
+    ];
 
-        const sql = 'INSERT INTO deals (dealId, dealName, ...otherColumns) VALUES (?, ?, ...otherValues)';
-        const values = [deal.dealId, deal.dealName, ...otherValues];
-
-      connection.query(sql, values, (error, results) => {
-        connection.release();
-      if (error) {
-        console.error('Error inserting deal into the database:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-        return;
-      }
-
-      console.log('Deal inserted into the database');
+    await pool.query(query, values);
+      // Send the deal data as a JSON response
       res.json(deal);
-    });
-  });
     } catch (error) {
       console.error('Error retrieving deal:', error);
       res.status(500).json({ error: 'Internal Server Error' });
