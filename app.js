@@ -441,10 +441,10 @@ app.post('/webhook', async (req, res) => {
   
       await pool.query(query, values);
       // Send the deal data as a JSON response
-      res.json(deal);
+  
     } catch (error) {
       console.error('Error retrieving or storing deal:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+      
     }
   };
   
