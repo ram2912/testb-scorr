@@ -11,7 +11,6 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const http = require('http');
 const socketIO = require('socket.io');
-const axios = require('axios');
 
 const server = http.createServer(app);
 const io = socketIO(server);
@@ -391,21 +390,15 @@ app.use(express.json());
 let webhookDealId;
 
 const storeDeals = async (webhookDealId, accessToken) => {
-    const url = `https://api.hubspot.com/crm/v3/objects/deals/${webhookDealId}`;
     try {
-            const headers2 = {
-              Authorization: `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            };
-            console.log('===> Replace the following request.get() to test other API calls');
-            console.log('===> request.get(\'https://api.hubapi.com/contacts/v1/lists/all/contacts/all?count=1\')');
-            const response = await request.get(url, {
-              headers: headers2
-            });
-
-            const deal=response.data;
-
-        const query = `
+      const accessToken = await getAccessToken(); // Assuming you have a function to retrieve the access token
+      const hubspotClient = new hubspot.Client({ accessToken });
+  
+      // Retrieve the deal using the webhookDealId
+      const deal = await hubspotClient.crm.deals.basicApi.getById(webhookDealId);
+      console.log(JSON.stringify(deal, null, 2));
+  
+      const query = `
         INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       `;
@@ -416,7 +409,7 @@ const storeDeals = async (webhookDealId, accessToken) => {
       const values = [
         id,
         deal.properties.amount,
-        deal.properties.closedate, 
+        deal.properties.closedate,
         deal.properties.createdate,
         deal.properties.dealname,
         deal.properties.dealstage,
