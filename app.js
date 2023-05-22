@@ -9,6 +9,11 @@ const cors = require('cors');
 const crypto = require('crypto');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
+const http = require('http');
+const socketIO = require('socket.io');
+
+const server = http.createServer(app);
+const io = socketIO(server);
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -395,58 +400,52 @@ app.post('/webhook', async (req, res) => {
       // Extract relevant data from the webhook payload
       const eventData = req.body[0]; // Assuming there's only one event in the payload
       webhookDealId = eventData.objectId; // Store the dealId
+
+      await storeDeals(webhookDealId);
   
       res.sendStatus(200);
     } catch (error) {
       console.error('Error handling webhook:', error);
       res.sendStatus(500);
     }
-  });
-  
-  app.get('/deals', async (req, res) => {
-    try {
-      const accessToken = await getAccessToken(req.sessionID);
-      const hubspotClient = new hubspot.Client({ accessToken });
-  
-      // Retrieve the deal using the stored dealId
-      const deal = await hubspotClient.crm.deals.basicApi.getById(webhookDealId);
-      console.log(JSON.stringify(deal, null, 2));
 
-      const query = `
-      INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    `;
 
-    // Generate a new UUID for the id column
-    const id = uuidv4();
-
-    const values = [
-      id,
-      deal.properties.amount,
-      deal.properties.closedate,
-      deal.properties.createdate,
-      deal.properties.dealname,
-      deal.properties.dealstage,
-      deal.properties.hs_lastmodifieddate,
-      deal.properties.hs_object_id,
-      deal.properties.pipeline
-    ];
-
-    await pool.query(query, values);
-      // Send the deal data as a JSON response
-      res.json(deal);
-    } catch (error) {
-      console.error('Error retrieving deal:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
-  
-
-app.get('/error', (req, res) => {
-  res.setHeader('Content-Type', 'text/html');
-  res.write(`<h4>Error: ${req.query.msg}</h4>`);
-  res.end();
-});
+    const storeDeals = async (webhookDealId) => {
+        try {
+          const accessToken = await getAccessToken(); // Assuming you have a function to retrieve the access token
+          const hubspotClient = new hubspot.Client({ accessToken });
+      
+          // Retrieve the deal using the webhookDealId
+          const deal = await hubspotClient.crm.deals.basicApi.getById(webhookDealId);
+          console.log(JSON.stringify(deal, null, 2));
+      
+          const query = `
+            INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          `;
+      
+          // Generate a new UUID for the id column
+          const id = uuidv4();
+      
+          const values = [
+            id,
+            deal.properties.amount,
+            deal.properties.closedate,
+            deal.properties.createdate,
+            deal.properties.dealname,
+            deal.properties.dealstage,
+            deal.properties.hs_lastmodifieddate,
+            deal.properties.hs_object_id,
+            deal.properties.pipeline
+          ];
+      
+          await pool.query(query, values);
+        } catch (error) {
+          console.error('Error storing deal:', error);
+          throw new Error('Failed to store deal in the database');
+        }
+      };
+      
 
 
 app.listen(PORT, () => console.log(`Server started on Port ${PORT}`));
