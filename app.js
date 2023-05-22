@@ -389,12 +389,33 @@ app.get('/', async (req, res) => {
 app.use(express.json());
 let webhookDealId;
 
-const storeDeals = async (webhookDealId, accessToken) => {
+app.post('/webhook', async (req, res) => {
     try {
-      const accessToken = await getAccessToken(); // Assuming you have a function to retrieve the access token
+      const accessToken = await getAccessToken(req.sessionID);
       const hubspotClient = new hubspot.Client({ accessToken });
   
-      // Retrieve the deal using the webhookDealId
+      // Log the incoming request body as JSON
+      console.log('Received webhook:', JSON.stringify(req.body));
+  
+      // Extract relevant data from the webhook payload
+      const eventData = req.body[0]; // Assuming there's only one event in the payload
+      webhookDealId = eventData.objectId; // Store the dealId
+
+      await storeDeals(webhookDealId);
+  
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Error handling webhook:', error);
+      res.sendStatus(500);
+    }
+  });
+  
+  const storeDeals = async (webhookDealId) => {
+    try {
+      const accessToken = await getAccessToken(req.sessionID);
+      const hubspotClient = new hubspot.Client({ accessToken });
+  
+      // Retrieve the deal using the stored dealId
       const deal = await hubspotClient.crm.deals.basicApi.getById(webhookDealId);
       console.log(JSON.stringify(deal, null, 2));
   
@@ -419,36 +440,21 @@ const storeDeals = async (webhookDealId, accessToken) => {
       ];
   
       await pool.query(query, values);
+      // Send the deal data as a JSON response
+      res.json(deal);
     } catch (error) {
-      console.error('Error storing deal:', error);
-      throw new Error('Failed to store deal in the database');
+      console.error('Error retrieving or storing deal:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   };
   
-
-app.post('/webhook', async (req, res) => {
-    try {
-      const accessToken = await getAccessToken(req.sessionID);
-      const hubspotClient = new hubspot.Client({ accessToken });
   
-      // Log the incoming request body as JSON
-      console.log('Received webhook:', JSON.stringify(req.body));
-  
-      // Extract relevant data from the webhook payload
-      const eventData = req.body[0]; // Assuming there's only one event in the payload
-      webhookDealId = eventData.objectId; // Store the dealId
 
-      await storeDeals(webhookDealId, accessToken);
-  
-      res.sendStatus(200);
-    } catch (error) {
-      console.error('Error handling webhook:', error);
-      res.sendStatus(500);
-    }
-    });
-
-
-   
+app.get('/error', (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.write(`<h4>Error: ${req.query.msg}</h4>`);
+  res.end();
+});
 
 
 app.listen(PORT, () => console.log(`Server started on Port ${PORT}`));
