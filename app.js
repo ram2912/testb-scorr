@@ -416,7 +416,7 @@ app.post('/webhook', async (req, res) => {
       );
       console.log(JSON.stringify(deal, null, 2));
 
-      webhookDealId = []; // Clear the stored dealId
+      // Clear the stored dealId
 
       const query = `
       INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
@@ -440,6 +440,8 @@ app.post('/webhook', async (req, res) => {
       await Promise.all(
         values.map((dealValues) => pool.query(query, dealValues))
       );
+
+      webhookDealId = [];
   
       // Send the deal data as a JSON response
       res.json(deal);
