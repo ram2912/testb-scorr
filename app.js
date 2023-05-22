@@ -401,7 +401,7 @@ app.post('/webhook', async (req, res) => {
       const eventData = req.body[0]; // Assuming there's only one event in the payload
       webhookDealId = eventData.objectId; // Store the dealId
 
-      await storeDeals(webhookDealId);
+      await storeDeals(req);
   
       res.sendStatus(200);
     } catch (error) {
@@ -410,7 +410,7 @@ app.post('/webhook', async (req, res) => {
     }
   });
   
-  const storeDeals = async (req, webhookDealId) => {
+  const storeDeals = async (req) => {
     try {
       const accessToken = await getAccessToken(req.sessionID);
       const hubspotClient = new hubspot.Client({ accessToken });
