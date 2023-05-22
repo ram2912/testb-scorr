@@ -9,8 +9,6 @@ const cors = require('cors');
 const crypto = require('crypto');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
-const http = require('http');
-const socketIO = require('socket.io');
 
 
 const pool = new Pool({
@@ -385,7 +383,7 @@ app.get('/', async (req, res) => {
 
 
 app.use(express.json());
-let webhookDealId;
+let webhookDealId=[];
 
 app.post('/webhook', async (req, res) => {
     try {
@@ -397,21 +395,37 @@ app.post('/webhook', async (req, res) => {
   
       // Extract relevant data from the webhook payload
       const eventData = req.body[0]; // Assuming there's only one event in the payload
-      webhookDealId = eventData.objectId; // Store the dealId
-      
-      const deal = await hubspotClient.crm.deals.basicApi.getById(webhookDealId);
+      const dealId = eventData.objectId;
+      webhookDealId.push(dealId); // Store the dealId
+  
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Error handling webhook:', error);
+      res.sendStatus(500);
+    }
+  });
+  
+  app.get('/deals', async (req, res) => {
+    try {
+      const accessToken = await getAccessToken(req.sessionID);
+      const hubspotClient = new hubspot.Client({ accessToken });
+  
+      // Retrieve the deal using the stored dealId
+      const deal = await Promise.all(
+        webhookDealId.map((dealId) => hubspotClient.crm.deals.basicApi.getById(dealId))
+      );
       console.log(JSON.stringify(deal, null, 2));
-  
+
+      webhookDealId = []; // Clear the stored dealId
+
       const query = `
-        INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      `;
-  
-      // Generate a new UUID for the id column
-      const id = uuidv4();
-  
-      const values = [
-        id,
+      INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `;
+
+    // Generate a new UUID for the id column
+    const values = deal.map((deal) => [
+        uuidv4(),
         deal.properties.amount,
         deal.properties.closedate,
         deal.properties.createdate,
@@ -420,18 +434,20 @@ app.post('/webhook', async (req, res) => {
         deal.properties.hs_lastmodifieddate,
         deal.properties.hs_object_id,
         deal.properties.pipeline
-      ];
+      ]);
+
+
+      await Promise.all(
+        values.map((dealValues) => pool.query(query, dealValues))
+      );
   
-      await pool.query(query, values);
-      res.sendStatus(200);
+      // Send the deal data as a JSON response
+      res.json(deal);
     } catch (error) {
-      console.error('Error handling webhook:', error);
-      res.sendStatus(500);
+      console.error('Error retrieving deal:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-  
-  
-  
   
 
 app.get('/error', (req, res) => {
