@@ -410,7 +410,7 @@ app.post('/webhook', async (req, res) => {
     }
   });
   
-  const storeDeals = async (webhookDealId) => {
+  const storeDeals = async (req, webhookDealId) => {
     try {
       const accessToken = await getAccessToken(req.sessionID);
       const hubspotClient = new hubspot.Client({ accessToken });
