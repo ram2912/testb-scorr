@@ -389,9 +389,9 @@ app.get('/', async (req, res) => {
 app.use(express.json());
 let webhookDealId;
 
-const storeDeals = async (webhookDealId) => {
+const storeDeals = async (webhookDealId, accessToken) => {
     try {
-      const accessToken = await getAccessToken(); // Assuming you have a function to retrieve the access token
+      // Assuming you have a function to retrieve the access token
       const hubspotClient = new hubspot.Client({ accessToken });
   
       // Retrieve the deal using the webhookDealId
@@ -409,7 +409,7 @@ const storeDeals = async (webhookDealId) => {
       const values = [
         id,
         deal.properties.amount,
-        deal.properties.closedate,
+        deal.properties.closedate, 
         deal.properties.createdate,
         deal.properties.dealname,
         deal.properties.dealstage,
@@ -438,7 +438,7 @@ app.post('/webhook', async (req, res) => {
       const eventData = req.body[0]; // Assuming there's only one event in the payload
       webhookDealId = eventData.objectId; // Store the dealId
 
-      await storeDeals(webhookDealId);
+      await storeDeals(webhookDealId, accessToken);
   
       res.sendStatus(200);
     } catch (error) {
