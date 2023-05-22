@@ -401,7 +401,7 @@ app.post('/webhook', async (req, res) => {
       const eventData = req.body[0]; // Assuming there's only one event in the payload
       webhookDealId = eventData.objectId; // Store the dealId
 
-      await storeDeals(req);
+      await storeDeals(accessToken);
   
       res.sendStatus(200);
     } catch (error) {
@@ -410,14 +410,19 @@ app.post('/webhook', async (req, res) => {
     }
   });
   
-  const storeDeals = async (req) => {
-    try {
-      const accessToken = await getAccessToken(req.sessionID);
-      const hubspotClient = new hubspot.Client({ accessToken });
-  
-      // Retrieve the deal using the stored dealId
-      const deal = await hubspotClient.crm.deals.basicApi.getById(webhookDealId);
-      console.log(JSON.stringify(deal, null, 2));
+  const storeDeals = async (accessToken) => {
+    const url = `https://api.hubspot.com/crm/v3/objects/deals/${webhookDealId}`;
+        try {
+            const headers2 = {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            };
+            console.log('===> Replace the following request.get() to test other API calls');
+            console.log('===> request.get(\'https://api.hubapi.com/contacts/v1/lists/all/contacts/all?count=1\')');
+            const deal = await request.get(url, {
+              headers: headers2
+            });
+            
   
       const query = `
         INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
@@ -457,4 +462,4 @@ app.get('/error', (req, res) => {
 });
 
 
-app.listen(PORT, () => console.log(`Server started on Port ${PORT}`));
+app.listen(PORT, () => console.log(`Server started on Port ${PORT}`)); 
