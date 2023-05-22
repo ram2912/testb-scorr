@@ -11,7 +11,6 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const http = require('http');
 const socketIO = require('socket.io');
-const { url } = require('inspector');
 
 
 const pool = new Pool({
@@ -388,24 +387,6 @@ app.get('/', async (req, res) => {
 app.use(express.json());
 let webhookDealId;
 
-const getDeal = async (accessToken) => {
-    try{
-        url = `https://api.hubapi.com/crm/v3/objects/deals/${webhookDealId}`;
-        const headers = {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-        };
-        const result = await request.get(url, {
-            headers: headers
-        });
-        return JSON.parse(result).deals;
-    }
-    catch (e) {
-        console.error('  > Unable to retrieve deals');
-        return JSON.parse(e.response.body);
-    }
-};
-
 app.post('/webhook', async (req, res) => {
     try {
       const accessToken = await getAccessToken(req.sessionID);
@@ -417,38 +398,13 @@ app.post('/webhook', async (req, res) => {
       // Extract relevant data from the webhook payload
       const eventData = req.body[0]; // Assuming there's only one event in the payload
       webhookDealId = eventData.objectId; // Store the dealId
+  
       res.sendStatus(200);
-
-      const deal = await getDeal(accessToken);
-
-      const query = `
-      INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    `;
-
-    // Generate a new UUID for the id column
-    const id = uuidv4();
-
-    const values = [
-      id,
-      deal.properties.amount,
-      deal.properties.closedate,
-      deal.properties.createdate,
-      deal.properties.dealname,
-      deal.properties.dealstage,
-      deal.properties.hs_lastmodifieddate,
-      deal.properties.hs_object_id,
-      deal.properties.pipeline
-    ];
-
-    await pool.query(query, values);
-
     } catch (error) {
       console.error('Error handling webhook:', error);
       res.sendStatus(500);
     }
   });
-
   
   
   app.get('/deals', async (req, res) => {
