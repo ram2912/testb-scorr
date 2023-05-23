@@ -451,6 +451,49 @@ app.post('/webhook', async (req, res) => {
     }
   });
   
+  async function calculateStageConversionRates(sourceStage, targetStage) {
+    try {
+      const query = `
+        SELECT COUNT(*) AS count
+        FROM deals
+        WHERE dealstage = $1
+      `;
+      const sourceStageResult = await pool.query(query, [sourceStage]);
+      const sourceStageCount = sourceStageResult.rows[0].count;
+  
+      const targetStageResult = await pool.query(query, [targetStage]);
+      const targetStageCount = targetStageResult.rows[0].count;
+  
+      // Calculate conversion rate
+      const conversionRate = sourceStageCount > 0 ? (targetStageCount / sourceStageCount) * 100 : 0;
+  
+      return {
+        sourceStage,
+        targetStage,
+        conversionRate,
+      };
+    } catch (error) {
+      console.error('Error calculating stage conversion rate:', error);
+      throw error;
+    }
+  }
+  
+  app.get('/conversion-rate', async (req, res) => {
+    try {
+      const { sourceStage, targetStage } = req.query;
+  
+      // Validate user input (e.g., ensure sourceStage and targetStage are provided)
+  
+      const conversionRate = await calculateStageConversionRates(sourceStage, targetStage);
+  
+      res.json({ conversionRate });
+    } catch (error) {
+      console.error('Error calculating stage conversion rate:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+  
+  
 
 app.get('/error', (req, res) => {
   res.setHeader('Content-Type', 'text/html');
