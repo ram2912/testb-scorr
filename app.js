@@ -275,7 +275,24 @@ catch (e) {
 }
 };
 
+app.get('/pipelines', async (req, res) => {
+  try {
+    const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
+    const hubspotClient = new hubspot.Client({ accessToken });
+    const objectType = "deals";
+    
 
+    const apiResponse = await hubspotClient.crm.pipelines.pipelinesApi.getAll(objectType);
+
+    
+
+    res.json(apiResponse);
+  } catch (e) {
+    e.message === 'HTTP request failed'
+      ? console.error(JSON.stringify(e.response, null, 2))
+      : console.error(e);
+  }
+});
 
 app.get('/pipelinestage', async (req, res) => {
     try {
