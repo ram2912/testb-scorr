@@ -283,10 +283,21 @@ app.get('/pipelines', async (req, res) => {
     
 
     const apiResponse = await hubspotClient.crm.pipelines.pipelinesApi.getAll(objectType);
+   
 
-    
+    const pipelines = apiResponse.results.map((pipeline) => ({
+      label: pipeline.label,
+      id: pipeline.id,
+      stages: pipeline.stages.map((stage) => ({
+        label: stage.label,
+        id: stage.id,
+        displayOrder: stage.displayOrder,
+      })),
+    }));
 
-    res.json(apiResponse);
+
+
+    res.json(pipelines);
   } catch (e) {
     e.message === 'HTTP request failed'
       ? console.error(JSON.stringify(e.response, null, 2))
