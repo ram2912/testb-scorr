@@ -363,6 +363,7 @@ app.get('/pipelinestage', async (req, res) => {
 //properties with names and descriptions
 app.get('/properties', async (req, res) => {
     try {
+      if (isAuthorized(req.sessionID)){
       const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
       const hubspotClient = new hubspot.Client({ accessToken });
       const objectType = "deals";
@@ -383,6 +384,9 @@ app.get('/properties', async (req, res) => {
         res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
         res.header('Access-Control-Allow-Credentials', true);
       res.json(propertyNames, null, 2);
+      }else{
+        res.status(401).json({ error: 'Unauthorized' });
+      }
     } catch (e) {
         e.message === 'HTTP request failed'
         ? console.error(JSON.stringify(e.response, null, 2))
