@@ -380,7 +380,8 @@ app.get('/properties', async (req, res) => {
             
         };
         });
-      
+        res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+        res.header('Access-Control-Allow-Credentials', true);
       res.json(propertyNames, null, 2);
     } catch (e) {
         e.message === 'HTTP request failed'
