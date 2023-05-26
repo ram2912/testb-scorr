@@ -253,18 +253,39 @@ const getContacts = async (accessToken) => {
   }
 };
 
+
+const getPipeline = async (accessToken) => {
+  console.log('');
+  console.log('=== Retrieving contacts from HubSpot using the access token ===');
+  try {
+    const headers1 = {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    };
+    console.log('===> Replace the following request.get() to test other API calls');
+    console.log('===> request.get(\'https://api.hubapi.com/contacts/v1/lists/all/contacts/all?count=1\')');
+    const result = await request.get('https://api.hubapi.com/contacts/v1/lists/all/contacts/all', {
+      headers: headers1
+    });
+    return JSON.parse(result).contacts;
+  } catch (e) {
+    console.error('  > Unable to retrieve contacts');
+    return JSON.parse(e.response.body);
+  }
+};
+
 const getPipelinestage = async (accessToken) => {
 
 try {
    // Get the access token dynamically
    // Pass the access token to the hubspotClient
-   const objectType = "Deals";
-const pipelineId = "default";
+   const objectType = "deals";
+
    const headers2 = {
     Authorization: `Bearer ${accessToken}`,
     'Content-Type': 'application/json'
   };
-   const apiResponse = await request.get(`https://api.hubapi.com/crm/v3/pipelines/${objectType}/${pipelineId}/stages`, {
+   const apiResponse = await request.get(`https://api.hubapi.com/crm/v3/pipelines/${objectType}`, {
   headers: headers2
 }); return JSON.stringify(apiResponse, null, 2).stages;
 }
@@ -305,6 +326,19 @@ app.get('/pipelines', async (req, res) => {
   }
 });
 
+app.get('/pipelines2', async (req, res) => {
+  try {
+    const accessToken = await getAccessToken(req.sessionID);
+    const pipelines = await getPipeline(accessToken);
+
+    res.json(pipelines);
+
+  } catch (error) {
+    console.error('Error retrieving deal:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.get('/pipelinestage', async (req, res) => {
     try {
       const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
@@ -329,36 +363,7 @@ app.get('/pipelinestage', async (req, res) => {
     }
   });
 
-  app.get('/pipelines2', async (req, res) => {
-    try {
-      const accessToken = await getAccessToken(req.sessionID);
-      const hubspotClient = new hubspot.Client({ accessToken });
-      const objectType = "deals";
-    
   
-      // Retrieve the deal using the stored dealId
-      const apiResponse = await hubspotClient.crm.pipelines.pipelinesApi.getAll(objectType);
-      const pipelines2 = apiResponse.results.map((pipeline) => ({
-        label: pipeline.label,
-        id: pipeline.id,
-        stages: pipeline.stages.map((stage) => ({
-          label: stage.label,
-          id: stage.id,
-          displayOrder: stage.displayOrder,
-        })),
-      }));
-  
-  
-  
-      res.json(pipelines2);
-
-  
-   
-    } catch (error) {
-      console.error('Error retrieving deal:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
 
 //properties with names and descriptions
 app.get('/properties', async (req, res) => {
