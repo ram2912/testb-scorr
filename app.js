@@ -258,6 +258,7 @@ const getPipeline = async (accessToken) => {
   console.log('');
   console.log('=== Retrieving contacts from HubSpot using the access token ===');
   try {
+    const objectType = "deals";
     const headers1 = {
       Authorization: `Bearer ${accessToken}`,
       'Content-Type': 'application/json'
