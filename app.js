@@ -11,6 +11,9 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
 
+app.use(cors({ origin: 'http://localhost:3000',
+credentials: true,}));
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -73,9 +76,6 @@ const pool = new Pool({
 
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
-
-app.use(cors({ origin: 'http://localhost:3000',
-credentials: true,}));
 
 const CLIENT_ID = '94a8188f-5484-474f-b8a4-5eb80fc5d5db';
 const CLIENT_SECRET = 'c7f173fa-411e-480a-b5e9-d90a0c01a385';
@@ -338,7 +338,7 @@ app.get('/pipelinestage', async (req, res) => {
   
       // Retrieve the deal using the stored dealId
       const apiResponse = await hubspotClient.crm.pipelines.pipelinesApi.getAll(objectType);
-      const pipelines = apiResponse.results.map((pipeline) => ({
+      const pipelines2 = apiResponse.results.map((pipeline) => ({
         label: pipeline.label,
         id: pipeline.id,
         stages: pipeline.stages.map((stage) => ({
@@ -350,7 +350,7 @@ app.get('/pipelinestage', async (req, res) => {
   
   
   
-      res.json(pipelines);
+      res.json(pipelines2);
 
   
    
