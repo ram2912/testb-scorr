@@ -455,7 +455,15 @@ app.get('/', async (req, res) => {
   res.end();
 });
 
-
+app.get('/refreshtoken', async(req,res)=>{
+  try{
+  const accessToken = await getAccessToken(req.sessionID);
+  res.json({ accessToken });
+  }catch(error){
+    console.error('Error retrieving contacts:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.use(express.json());
 let webhookDealId=[];
