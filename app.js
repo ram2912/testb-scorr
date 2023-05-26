@@ -269,7 +269,7 @@ const getPipeline = async (accessToken) => {
     });
     console.log('API Response:', result);
 
-    return result.pipelines;
+    return result;
   } catch (e) {
     console.error('  > Unable to retrieve contacts');
     return JSON.parse(e.response.body);
