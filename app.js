@@ -329,6 +329,37 @@ app.get('/pipelinestage', async (req, res) => {
     }
   });
 
+  app.get('/pipelines2', async (req, res) => {
+    try {
+      const accessToken = await getAccessToken(req.sessionID);
+      const hubspotClient = new hubspot.Client({ accessToken });
+      const objectType = "deals";
+    
+  
+      // Retrieve the deal using the stored dealId
+      const apiResponse = await hubspotClient.crm.pipelines.pipelinesApi.getAll(objectType);
+      const pipelines = apiResponse.results.map((pipeline) => ({
+        label: pipeline.label,
+        id: pipeline.id,
+        stages: pipeline.stages.map((stage) => ({
+          label: stage.label,
+          id: stage.id,
+          displayOrder: stage.displayOrder,
+        })),
+      }));
+  
+  
+  
+      res.json(pipelines);
+
+  
+   
+    } catch (error) {
+      console.error('Error retrieving deal:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
 //properties with names and descriptions
 app.get('/properties', async (req, res) => {
     try {
@@ -505,6 +536,8 @@ app.post('/webhook', async (req, res) => {
       throw error;
     }
   }
+
+  
   
   app.get('/conversion-rate', async (req, res) => {
     try {
