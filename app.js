@@ -11,7 +11,7 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
 
-app.use(cors({ origin: 'http://localhost:3000',
+app.use(cors({ origin: '*',
 credentials: true,}));
 
 const pool = new Pool({
@@ -300,7 +300,7 @@ catch (e) {
 
 app.get('/pipelines', async (req, res) => {
   try {
-    const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
+    const accessToken = req.headers.authorization.split(' ')[1];// Get the access token dynamically
     const hubspotClient = new hubspot.Client({ accessToken });
     const objectType = "deals";
     
@@ -460,7 +460,7 @@ app.get('/refreshtoken', async(req,res)=>{
   const accessToken = await getAccessToken(req.sessionID);
   res.json({ accessToken });
   }catch(error){
-    console.error('Error retrieving contacts:', error);
+    console.error('Error retrieving access token:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
