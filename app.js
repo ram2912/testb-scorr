@@ -264,10 +264,10 @@ const getPipeline = async (accessToken) => {
     };
     console.log('===> Replace the following request.get() to test other API calls');
     console.log('===> request.get(\'https://api.hubapi.com/contacts/v1/lists/all/contacts/all?count=1\')');
-    const result = await request.get('https://api.hubapi.com/contacts/v1/lists/all/contacts/all', {
+    const result = await request.get(`https://api.hubapi.com/crm/v3/pipelines/${objectType}`, {
       headers: headers1
     });
-    return JSON.parse(result).contacts;
+    return JSON.parse(result).pipelines;
   } catch (e) {
     console.error('  > Unable to retrieve contacts');
     return JSON.parse(e.response.body);
