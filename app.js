@@ -11,7 +11,7 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
 
-app.use(cors({ origin: '*',
+app.use(cors({ origin: 'http://localhost:3000',
 credentials: true,}));
 
 const pool = new Pool({
