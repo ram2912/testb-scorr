@@ -93,7 +93,7 @@ if (process.env.SCOPE) {
 }
 
 // On successful install, users will be redirected to /oauth-callback
-const REDIRECT_URI = `http://localhost:5001/oauth-callback`;
+const REDIRECT_URI = `https://scorr-redeploy.herokuapp.com/oauth-callback`;
 
 //===========================================================================//
 
