@@ -412,7 +412,9 @@ app.get('/properties', async (req, res) => {
   
 
 app.get('/contacts', async (req, res) => {
+ 
     try {
+      console.log('Request Headers:', req.headers);
       if (isAuthorized(req.sessionID)) {
         const accessToken = await getAccessToken(req.sessionID);
         const contacts = await getContacts(accessToken);
