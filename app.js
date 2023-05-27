@@ -10,9 +10,12 @@ const crypto = require('crypto');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
-
-app.use(cors({ origin: 'https://scorr-frontend.herokuapp.com',
-credentials: true}));
+app.use(
+  cors({
+    origin: ["https://scorr-frontend.herokuapp.com", "http://localhost:3000"],
+    credentials: true,
+  })
+);
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
