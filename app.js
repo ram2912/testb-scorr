@@ -11,7 +11,7 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
 app.use(cors({
-  origin: ["https://scorr-frontend.herokuapp.com", "http://localhost:3000"],
+  origin: ["http://www.scorr-app.eu", "http://localhost:3000"],
   credentials: true
 }));
 
@@ -93,7 +93,7 @@ if (process.env.SCOPE) {
 }
 
 // On successful install, users will be redirected to /oauth-callback
-const REDIRECT_URI = `https://scorr-redeploy.herokuapp.com/oauth-callback`;
+const REDIRECT_URI = `https://backend.scorr-app.eu/oauth-callback`;
 
 //===========================================================================//
 
