@@ -11,7 +11,7 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
 app.use(cors({
-  origin: 'https://www.scorr-app.eu',
+  origin: ['https://www.scorr-app.eu','http://localhost:3000'],
   credentials: true
 }));
 
