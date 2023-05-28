@@ -40,6 +40,40 @@ const pool = new Pool({
       return false;
     }
   }
+
+  async function checkPipelinesTableExists() {
+    try {
+      const query = `
+        SELECT EXISTS (
+          SELECT 1
+          FROM information_schema.tables
+          WHERE table_name = 'pipelines'
+        )
+      `;
+  
+      const result = await pool.query(query);
+      return result.rows[0].exists;
+    } catch (error) {
+      console.error('Error checking if "pipelines" table exists:', error);
+      return false;
+    }
+  }
+
+  async function createPipelineTable(){
+    try{
+      const query = `
+      CREATE TABLE pipelines (
+        id SERIAL PRIMARY KEY,
+        pipelineID VARCHAR(255),
+        name VARCHAR(255) NOT NULL
+      )
+    `;
+      await pool.query(query);
+      console.log('The "pipelines" table has been created successfully.');
+    } catch (error) {
+      console.error('Error creating "pipelines" table:', error);
+    }
+  }
   
   // Function to create the 'deals' table
   async function createDealsTable() {
@@ -72,6 +106,33 @@ const pool = new Pool({
       await createDealsTable();
     }
   }
+
+
+  app.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+  
+    try {
+      // Check if the user already exists
+      const existingUser = await pool.query('SELECT * FROM authentication WHERE username = $1', [username]);
+      if (existingUser.rows.length > 0) {
+        return res.status(400).json({ error: 'User already exists' });
+      }
+  
+      // Insert the new user into the database
+      const newUser = await pool.query('INSERT INTO authentication (username, password) VALUES ($1, $2) RETURNING id', [
+        username,
+        password,
+      ]);
+  
+      // Create an empty pipelines array for the user
+      
+  
+      return res.status(200).json({ message: 'User registered successfully' });
+    } catch (error) {
+      console.error('Error registering user:', error);
+      return res.status(500).json({ error: 'An error occurred while registering user' });
+    }
+  });
   
   // Call the function to set up the 'deals' table
   setupDealsTable();
@@ -565,6 +626,39 @@ app.post('/webhook', async (req, res) => {
       throw error;
     }
   }
+
+
+app.post('/store-pipelines', async (req, res) => {
+  const { leadPipeline, bdrPipeline, salesPipeline } = req.body;
+
+  try {
+    // Create a client from the pool
+    const client = await pool.connect();
+
+    // Insert the pipelines into the database
+    const query = `
+      INSERT INTO pipelines (pipelineID, name)
+      VALUES ($1, $2), ($3, $4), ($5, $6)
+    `;
+    const values = [
+      leadPipeline.id, leadPipeline.name,
+      bdrPipeline.id, bdrPipeline.name,
+      salesPipeline.id, salesPipeline.name,
+    ];
+
+    await client.query(query, values);
+
+    // Release the client back to the pool
+    client.release();
+
+    // Send a success response
+    res.status(200).json({ message: 'Pipelines stored successfully' });
+  } catch (error) {
+    console.error('Error storing pipelines:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
   
   
