@@ -9,6 +9,7 @@ const cors = require('cors');
 const crypto = require('crypto');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
+const bodyParser = require('body-parser');
 
 app.use(cors({
   origin: ['https://www.scorr-app.eu','http://localhost:3000'],
