@@ -107,7 +107,7 @@ const pool = new Pool({
     }
   }
 
-
+  app.use(bodyParser.json());
   app.post('/register', async (req, res) => {
     const { username, password } = req.body;
   
