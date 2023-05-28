@@ -120,7 +120,7 @@ const pool = new Pool({
       }
   
       // Insert the new user into the database
-      const newUser = await pool.query('INSERT INTO authentication (username, password) VALUES ($1, $2) RETURNING id', [
+      const newUser = await pool.query('INSERT INTO authentication (username, password) VALUES ($1, $2) RETURNING userid', [
         username,
         password,
       ]);
