@@ -114,13 +114,13 @@ const pool = new Pool({
   
     try {
       // Check if the user already exists
-      const existingUser = await pool.query('SELECT * FROM authentication WHERE username = $1', [username]);
+      const existingUser = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
       if (existingUser.rows.length > 0) {
         return res.status(400).json({ error: 'User already exists' });
       }
   
       // Insert the new user into the database
-      const newUser = await pool.query('INSERT INTO authentication (username, password) VALUES ($1, $2) RETURNING userid', [
+      const newUser = await pool.query('INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id', [
         username,
         password,
       ]);
