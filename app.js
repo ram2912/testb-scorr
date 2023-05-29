@@ -629,36 +629,20 @@ app.post('/webhook', async (req, res) => {
   }
 
 
-app.post('/store-pipelines', async (req, res) => {
-  const { leadPipeline, bdrPipeline, salesPipeline } = req.body;
-
-  try {
-    // Create a client from the pool
-    const client = await pool.connect();
-
-    // Insert the pipelines into the database
-    const query = `
-      INSERT INTO pipelines (pipelineID, name)
-      VALUES ($1, $2), ($3, $4), ($5, $6)
-    `;
-    const values = [
-      leadPipeline.id, leadPipeline.name,
-      bdrPipeline.id, bdrPipeline.name,
-      salesPipeline.id, salesPipeline.name,
-    ];
-
-    await client.query(query, values);
-
-    // Release the client back to the pool
-    client.release();
-
-    // Send a success response
-    res.status(200).json({ message: 'Pipelines stored successfully' });
-  } catch (error) {
-    console.error('Error storing pipelines:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  app.post('/store-pipelines', async (req, res) => {
+    const { leadPipeline, bdrPipeline, salesPipeline } = req.body;
+  
+    // Insert the pipeline data into the "pipelines" table in the database
+    try {
+      const query = 'INSERT INTO pipelines (lead_pipeline, bdr_pipeline, sales_pipeline) VALUES ($1, $2, $3)';
+      await pool.query(query, [leadPipeline, bdrPipeline, salesPipeline]);
+  
+      res.sendStatus(200); // Send success status if the data is stored successfully
+    } catch (error) {
+      console.error('Error storing pipelines:', error);
+      res.sendStatus(500); // Send error status if there is an issue storing the data
+    }
+  });
 
 
   
