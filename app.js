@@ -658,10 +658,24 @@ app.post('/webhook', async (req, res) => {
       const bdrPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.bdr_pipeline_id);
       const salesPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id);
 
-      res.json({
+      const pipelineStagesResponse = await Promise.all([
         leadPipelineStages,
         bdrPipelineStages,
         salesPipelineStages,
+      ]);
+
+    const leadStages = pipelineStagesResponse[0].results.map((stage) => stage.label);
+    const bdrStages = pipelineStagesResponse[1].results.map((stage) => stage.label);
+    const salesStages = pipelineStagesResponse[2].results.map((stage) => stage.label);
+
+    const fullFunnelStages = {
+      leadPipelineStages: leadStages,
+      bdrPipelineStages: bdrStages,
+      salesPipelineStages: salesStages,
+    };
+
+      res.json({
+        fullFunnelStages,
       });
     } catch (error) {
       console.error('Error retrieving pipelines:', error);
