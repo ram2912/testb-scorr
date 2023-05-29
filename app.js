@@ -699,6 +699,7 @@ app.post('/webhook', async (req, res) => {
   async function calculateStageConversionRates(funnelStages) {
     try {
       const conversionRates = [];
+      console.log(funnelStages);
   
       for (let i = 0; i < funnelStages.length - 1; i++) {
         const sourceStage = funnelStages[i];
