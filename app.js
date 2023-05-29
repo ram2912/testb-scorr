@@ -628,14 +628,13 @@ app.post('/webhook', async (req, res) => {
     }
   }
 
-
   app.post('/store-pipelines', async (req, res) => {
     const { leadPipeline, bdrPipeline, salesPipeline } = req.body;
   
     // Insert the pipeline data into the "pipelines" table in the database
     try {
-      const query = 'INSERT INTO pipelines (lead_pipeline, bdr_pipeline, sales_pipeline) VALUES ($1, $2, $3)';
-      await pool.query(query, [leadPipeline, bdrPipeline, salesPipeline]);
+      const query = 'INSERT INTO pipelines (lead_pipeline_id, lead_pipeline_name, bdr_pipeline_id, bdr_pipeline_name, sales_pipeline_id, sales_pipeline_name) VALUES ($1, $2, $3, $4, $5, $6)';
+      await pool.query(query, [leadPipeline.id, leadPipeline.name, bdrPipeline.id, bdrPipeline.name, salesPipeline.id, salesPipeline.name]);
   
       res.sendStatus(200); // Send success status if the data is stored successfully
     } catch (error) {
@@ -643,7 +642,6 @@ app.post('/webhook', async (req, res) => {
       res.sendStatus(500); // Send error status if there is an issue storing the data
     }
   });
-
 
   
   
