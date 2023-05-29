@@ -599,32 +599,7 @@ app.post('/webhook', async (req, res) => {
     }
   });
   
-  async function calculateStageConversionRates(sourceStage, targetStage) {
-    try {
-      const query = `
-        SELECT COUNT(*) AS count
-        FROM deals
-        WHERE dealstage = $1
-      `;
-      const sourceStageResult = await pool.query(query, [sourceStage]);
-      const sourceStageCount = sourceStageResult.rows[0].count;
-  
-      const targetStageResult = await pool.query(query, [targetStage]);
-      const targetStageCount = targetStageResult.rows[0].count;
-  
-      // Calculate conversion rate
-      const conversionRate = sourceStageCount > 0 ? (targetStageCount / sourceStageCount) * 100 : 0;
-  
-      return {
-        sourceStage,
-        targetStage,
-        conversionRate,
-      };
-    } catch (error) {
-      console.error('Error calculating stage conversion rate:', error);
-      throw error;
-    }
-  }
+
 
   app.post('/store-pipelines', async (req, res) => {
     const { funnelName, leadPipeline, bdrPipeline, salesPipeline } = req.body;
@@ -641,6 +616,8 @@ app.post('/webhook', async (req, res) => {
       res.sendStatus(500); // Send error status if there is an issue storing the data
     }
   });
+
+  let funnelStages = [];
 
   app.get('/pipelines-stages', async (req, res) => {
     try {
@@ -685,7 +662,7 @@ app.post('/webhook', async (req, res) => {
       });
 
       console.log(funnelStages);
-      
+
     } catch (error) {
       console.error('Error retrieving pipelines:', error);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -718,19 +695,53 @@ app.post('/webhook', async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
+  async function calculateStageConversionRates(funnelStages) {
+    try {
+
+      const conversionRates =[];
+
+      for (let i = 0; i < sourceStage.length; i++) {
+        const sourceStage = funnelStages[i];
+        const targetStage = funnelStages[i + 1];
+
+      const query = `
+        SELECT COUNT(*) AS count
+        FROM deals
+        WHERE dealstage = $1
+      `;
+      const sourceStageResult = await pool.query(query, [sourceStage]);
+      const sourceStageCount = sourceStageResult.rows[0].count;
+  
+      const targetStageResult = await pool.query(query, [targetStage]);
+      const targetStageCount = targetStageResult.rows[0].count;
+  
+      // Calculate conversion rate
+      const conversionRate = sourceStageCount > 0 ? (targetStageCount / sourceStageCount) * 100 : 0;
+  
+      const stageConversionRate = {
+        sourceStage,
+        targetStage,
+        conversionRate,
+      };
+
+      conversionRates.push(stageConversionRate);
+    }
+    return conversionRates;
+    
+    } catch (error) {
+      console.error('Error calculating stage conversion rate:', error);
+      throw error;
+    }
+  }
   
   
   app.get('/conversion-rate', async (req, res) => {
     try {
-      const { sourceStage, targetStage } = req.query;
-  
-      // Validate user input (e.g., ensure sourceStage and targetStage are provided)
-  
-      const conversionRate = await calculateStageConversionRates(sourceStage, targetStage);
-  
-      res.json({ conversionRate });
+      const conversionRates = await calculateStageConversionRates(funnelStages);
+      res.json({ conversionRates });
     } catch (error) {
-      console.error('Error calculating stage conversion rate:', error);
+      console.error('Error calculating conversion rates:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
