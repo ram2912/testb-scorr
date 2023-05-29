@@ -664,9 +664,9 @@ app.post('/webhook', async (req, res) => {
         salesPipelineStages,
       ]);
 
-    const leadStages = pipelineStagesResponse[0].results.map((stage) => stage.label);
-    const bdrStages = pipelineStagesResponse[1].results.map((stage) => stage.label);
-    const salesStages = pipelineStagesResponse[2].results.map((stage) => stage.label);
+    const leadStages = pipelineStagesResponse[0].results.map((stage) => stage.id);
+    const bdrStages = pipelineStagesResponse[1].results.map((stage) => stage.id);
+    const salesStages = pipelineStagesResponse[2].results.map((stage) => stage.id);
 
     const fullFunnelStages = {
       leadPipelineStages: leadStages,
