@@ -399,9 +399,6 @@ app.get('/pipelines2', async (req, res) => {
     const pipelines = await getPipeline(accessToken);
     console.log('Pipelines:', pipelines);
 
-
-
-    res.setHeader('Content-Type', 'application/json');
     res.json(pipelines);
 
   } catch (error) {
@@ -409,6 +406,7 @@ app.get('/pipelines2', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 app.get('/pipelinestage', async (req, res) => {
     try {
