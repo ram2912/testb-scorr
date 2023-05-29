@@ -698,42 +698,42 @@ app.post('/webhook', async (req, res) => {
 
   async function calculateStageConversionRates(funnelStages) {
     try {
-
-      const conversionRates =[];
-
-      for (let i = 0; i < sourceStage.length; i++) {
+      const conversionRates = [];
+  
+      for (let i = 0; i < funnelStages.length - 1; i++) {
         const sourceStage = funnelStages[i];
         const targetStage = funnelStages[i + 1];
-
-      const query = `
-        SELECT COUNT(*) AS count
-        FROM deals
-        WHERE dealstage = $1
-      `;
-      const sourceStageResult = await pool.query(query, [sourceStage]);
-      const sourceStageCount = sourceStageResult.rows[0].count;
   
-      const targetStageResult = await pool.query(query, [targetStage]);
-      const targetStageCount = targetStageResult.rows[0].count;
+        const query = `
+          SELECT COUNT(*) AS count
+          FROM deals
+          WHERE dealstage = $1
+        `;
+        const sourceStageResult = await pool.query(query, [sourceStage]);
+        const sourceStageCount = sourceStageResult.rows[0].count;
   
-      // Calculate conversion rate
-      const conversionRate = sourceStageCount > 0 ? (targetStageCount / sourceStageCount) * 100 : 0;
+        const targetStageResult = await pool.query(query, [targetStage]);
+        const targetStageCount = targetStageResult.rows[0].count;
   
-      const stageConversionRate = {
-        sourceStage,
-        targetStage,
-        conversionRate,
-      };
-
-      conversionRates.push(stageConversionRate);
-    }
-    return conversionRates;
-    
+        // Calculate conversion rate
+        const conversionRate = sourceStageCount > 0 ? (targetStageCount / sourceStageCount) * 100 : 0;
+  
+        const stageConversionRate = {
+          sourceStage,
+          targetStage,
+          conversionRate,
+        };
+  
+        conversionRates.push(stageConversionRate);
+      }
+  
+      return conversionRates;
     } catch (error) {
       console.error('Error calculating stage conversion rate:', error);
       throw error;
     }
   }
+  
   
   
   app.get('/conversion-rate', async (req, res) => {
