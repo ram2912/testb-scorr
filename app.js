@@ -651,7 +651,7 @@ app.post('/webhook', async (req, res) => {
       salesPipelineStages: salesStages,
     };
 
-    const funnelStages = [
+    funnelStages = [
       ...leadStages,
       ...bdrStages,
       ...salesStages,
