@@ -642,6 +642,31 @@ app.post('/webhook', async (req, res) => {
     }
   });
 
+  async function getDistinctFunnelNames() {
+    try {
+      const query = `
+        SELECT DISTINCT funnel_name
+        FROM pipelines
+      `;
+      const result = await pool.query(query);
+      const funnelNames = result.rows.map((row) => row.funnel_name);
+  
+      return funnelNames;
+    } catch (error) {
+      console.error('Error fetching distinct funnel names:', error);
+      throw error;
+    }
+  }
+  
+  app.get('/funnels', async (req, res) => {
+    try {
+      const funnelNames = await getDistinctFunnelNames();
+      res.json(funnelNames);
+    } catch (error) {
+      console.error('Error fetching funnel names:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
   
   
   app.get('/conversion-rate', async (req, res) => {
