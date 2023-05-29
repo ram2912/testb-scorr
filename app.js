@@ -674,9 +674,18 @@ app.post('/webhook', async (req, res) => {
       salesPipelineStages: salesStages,
     };
 
+    const funnelStages = [
+      ...leadStages,
+      ...bdrStages,
+      ...salesStages,
+    ];
+
       res.json({
         fullFunnelStages,
       });
+
+      console.log(funnelStages);
+      
     } catch (error) {
       console.error('Error retrieving pipelines:', error);
       res.status(500).json({ error: 'Internal Server Error' });
