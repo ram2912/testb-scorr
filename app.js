@@ -642,6 +642,34 @@ app.post('/webhook', async (req, res) => {
     }
   });
 
+  app.get('/pipelines-stages', async (req, res) => {
+    try {
+      const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
+      const hubspotClient = new hubspot.Client({ accessToken });
+      const objectType = "deals";
+
+      const { funnelName } = req.query;
+
+      const query = 'SELECT lead_pipeline_id, bdr_pipeline_id, sales_pipeline_id FROM pipelines WHERE funnel_name = $1';
+      const result = await pool.query(query, [funnelName]);
+      const pipelineIds = result.rows[0];
+
+      const leadPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.lead_pipeline_id);
+      const bdrPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.bdr_pipeline_id);
+      const salesPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id);
+
+      res.json({
+        leadPipelineStages,
+        bdrPipelineStages,
+        salesPipelineStages,
+      });
+    } catch (error) {
+      console.error('Error retrieving pipelines:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+
   async function getDistinctFunnelNames() {
     try {
       const query = `
