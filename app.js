@@ -619,42 +619,6 @@ app.post('/webhook', async (req, res) => {
 
   let funnelStages = [];
 
-  async function getPipelineStages(funnelName) {
-    // Fetch pipeline IDs based on funnel name
-    const query = 'SELECT lead_pipeline_id, bdr_pipeline_id, sales_pipeline_id FROM pipelines WHERE funnel_name = $1';
-    const result = await pool.query(query, [funnelName]);
-    const pipelineIds = result.rows[0];
-  
-    // Retrieve pipeline stages for each pipeline ID
-    const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
-    const hubspotClient = new hubspot.Client({ accessToken });
-    const objectType = "deals";
-  
-    const leadPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.lead_pipeline_id);
-    const bdrPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.bdr_pipeline_id);
-    const salesPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id);
-  
-    const pipelineStagesResponse = await Promise.all([
-      leadPipelineStages,
-      bdrPipelineStages,
-      salesPipelineStages,
-    ]);
-  
-    // Extract stage IDs from pipeline stages
-    const leadStages = pipelineStagesResponse[0].results.map((stage) => stage.id);
-    const bdrStages = pipelineStagesResponse[1].results.map((stage) => stage.id);
-    const salesStages = pipelineStagesResponse[2].results.map((stage) => stage.id);
-  
-    // Combine all stage IDs into a single array
-    const pipelineStages = [
-      ...leadStages,
-      ...bdrStages,
-      ...salesStages,
-    ];
-  
-    return pipelineStages;
-  }
-
   app.get('/pipelines-stages', async (req, res) => {
     try {
       const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
@@ -772,24 +736,17 @@ app.post('/webhook', async (req, res) => {
   }
   
   
-  app.get('conversion-rate', async (req, res) => {
+  
+  app.get('/conversion-rate', async (req, res) => {
     try {
-      const { funnelName } = req.query;
-  
-      // Retrieve pipeline stages based on funnel name
-      const pipelineStages = await getPipelineStages(funnelName);
-  
-      // Calculate conversion rates based on pipeline stages
-      const conversionRates = await calculateStageConversionRates(pipelineStages);
-  
+
+      const conversionRates = await calculateStageConversionRates(funnelStages);
       res.json({ conversionRates });
-  
     } catch (error) {
       console.error('Error calculating conversion rates:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-  
   
   
 
