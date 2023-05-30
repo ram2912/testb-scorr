@@ -663,9 +663,6 @@ app.post('/webhook', async (req, res) => {
 
       console.log(funnelStages);
 
-      const conversionRates = await calculateStageConversionRates(funnelStages);
-    res.json({ conversionRates });
-
     } catch (error) {
       console.error('Error retrieving pipelines:', error);
       res.status(500).json({ error: 'Internal Server Error' });
