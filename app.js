@@ -641,9 +641,18 @@ app.post('/webhook', async (req, res) => {
         salesPipelineStages,
       ]);
 
-    const leadStages = pipelineStagesResponse[0].results.map((stage) => stage.id);
-    const bdrStages = pipelineStagesResponse[1].results.map((stage) => stage.id);
-    const salesStages = pipelineStagesResponse[2].results.map((stage) => stage.id);
+      const leadStages = pipelineStagesResponse[0].results.map((stage) => ({
+        id: stage.id,
+        name: stage.label,
+      }));
+      const bdrStages = pipelineStagesResponse[1].results.map((stage) => ({
+        id: stage.id,
+        name: stage.label,
+      }));
+      const salesStages = pipelineStagesResponse[2].results.map((stage) => ({
+        id: stage.id,
+        name: stage.label,
+      }));
 
     const fullFunnelStages = {
       leadPipelineStages: leadStages,
@@ -702,8 +711,11 @@ app.post('/webhook', async (req, res) => {
       console.log(funnelStages);
   
       for (let i = 0; i < funnelStages.length - 1; i++) {
-        const sourceStage = funnelStages[i];
-        const targetStage = funnelStages[i + 1];
+        const sourceStage = funnelStages[i].id;
+        const targetStage = funnelStages[i + 1].id;
+
+        const sourceStageName = funnelStages[i].name;
+        const targetStageName = funnelStages[i + 1].name;
   
         const query = `
           SELECT COUNT(*) AS count
@@ -720,8 +732,14 @@ app.post('/webhook', async (req, res) => {
         const conversionRate = sourceStageCount > 0 ? (targetStageCount / sourceStageCount) * 100 : 0;
   
         const stageConversionRate = {
-          sourceStage,
-          targetStage,
+          sourceStage: {
+            id: sourceStage,
+            name: sourceStageName,
+          },
+          targetStage: {
+            id: targetStage,
+            name: targetStageName,
+          },
           conversionRate,
         };
   
