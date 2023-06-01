@@ -671,12 +671,14 @@ app.post('/webhook', async (req, res) => {
      
     };
 
+
+
     funnelStages = [
-      ...leadStages,
-      ...bdrStages,
-      ...salesStages,
-      
+      ...leadStages.slice(0, -1),
+      ...bdrStages.slice(0, -1),
+      ...salesStages.slice(0, -1),
     ];
+    
 
       res.json({
         fullFunnelStages,
