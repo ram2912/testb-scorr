@@ -644,6 +644,8 @@ app.post('/webhook', async (req, res) => {
         salesPipelineStages,
       ]);
 
+      console.log(pipelineStagesResponse);
+
       const leadStages = pipelineStagesResponse[0].results.map((stage) => ({
         id: stage.id,
         name: stage.label,
