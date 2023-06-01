@@ -638,6 +638,11 @@ app.post('/webhook', async (req, res) => {
       const bdrPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.bdr_pipeline_id);
       const salesPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id);
 
+      console.log(leadPipelineStages);
+      console.log(bdrPipelineStages);
+      console.log(salesPipelineStages);
+
+      
       const pipelineStagesResponse = await Promise.all([
         leadPipelineStages,
         bdrPipelineStages,
