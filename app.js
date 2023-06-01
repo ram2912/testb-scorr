@@ -242,7 +242,7 @@ app.get('/oauth-callback', async (req, res) => {
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
     
-    res.redirect(`/`);
+    res.redirect(`https://www.scorr-app.eu/funnel`);
   }
 });
 
