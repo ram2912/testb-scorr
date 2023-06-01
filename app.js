@@ -662,9 +662,10 @@ app.post('/webhook', async (req, res) => {
     };
 
     funnelStages = [
+      ...salesStages,
       ...leadStages,
       ...bdrStages,
-      ...salesStages,
+    
     ];
 
       res.json({
