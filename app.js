@@ -630,10 +630,13 @@ app.post('/webhook', async (req, res) => {
       const query = 'SELECT lead_pipeline_id, bdr_pipeline_id, sales_pipeline_id FROM pipelines WHERE funnel_name = $1';
       const result = await pool.query(query, [funnelName]);
       const pipelineIds = result.rows[0];
+      console.log(pipelineIds.lead_pipeline_id);
+      console.log(pipelineIds.bdr_pipeline_id);
+      console.log(pipelineIds.sales_pipeline_id);
 
-      const leadPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id);
+      const leadPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.lead_pipeline_id);
       const bdrPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.bdr_pipeline_id);
-      const salesPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.lead_pipeline_id);
+      const salesPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id);
 
       const pipelineStagesResponse = await Promise.all([
         leadPipelineStages,
