@@ -655,9 +655,10 @@ app.post('/webhook', async (req, res) => {
       }));
 
     const fullFunnelStages = {
-      leadPipelineStages: leadStages,
-      bdrPipelineStages: bdrStages,
       salesPipelineStages: salesStages,
+      bdrPipelineStages: bdrStages,
+      leadPipelineStages: leadStages,
+     
     };
 
     funnelStages = [
