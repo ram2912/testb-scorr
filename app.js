@@ -12,7 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 
 app.use(cors({
-  origin: ['https://www.scorr-app.eu','http://localhost:3000'],
+  origin: ['https://www.scorr-app.eu','http://localhost:3000', 'https://test.scorr-app.eu'],
   credentials: true
 }));
 
@@ -155,7 +155,7 @@ if (process.env.SCOPE) {
 }
 
 // On successful install, users will be redirected to /oauth-callback
-const REDIRECT_URI = `https://backend.scorr-app.eu/oauth-callback`;
+const REDIRECT_URI = `https://testback.scorr-app.eu/oauth-callback`;
 
 //===========================================================================//
 

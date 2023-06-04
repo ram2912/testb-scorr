@@ -1,12 +1,12 @@
 {
-  "name": "node-tutorial",
+  "name": "scorr-backend",
   "version": "1.0.0",
   "description": "Node Js Tutorial",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
-  "author": "Daily Code Buffer",
+  "author": "Shriram2912",
   "license": "ISC",
   "dependencies": {
     "@hapi/joi": "^17.1.1",
