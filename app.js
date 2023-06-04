@@ -207,6 +207,8 @@ app.get('/install', (req, res) => {
 });
 
 
+
+
 // Step 2
 // The user is prompted to give the app access to the requested
 // resources. This is all done by HubSpot, so no work is necessary
@@ -293,6 +295,16 @@ const getAccessToken = async (userId) => {
 const isAuthorized = (userId) => {
   return refreshTokenStore[userId] ? true : false;
 };
+
+app.get('/authorization-status', (req, res) => {
+  const isAuthorized = refreshTokenStore[req.sessionID] ? true : false;
+
+  if (isAuthorized) {
+    res.status(200).json({ status: 'authorized' });
+  } else {
+    res.status(401).json({ status: 'unauthorized' });
+  }
+});
 
 //====================================================//
 //   Using an Access Token to Query the HubSpot API   //
