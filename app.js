@@ -141,8 +141,8 @@ const pool = new Pool({
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
 
-const CLIENT_ID = '94a8188f-5484-474f-b8a4-5eb80fc5d5db';
-const CLIENT_SECRET = 'c7f173fa-411e-480a-b5e9-d90a0c01a385';
+const CLIENT_ID = '145b0563-58c0-4d84-b557-6d0c5c2afcbd';
+const CLIENT_SECRET = 'd5006e11-6a22-46e8-b3f9-92c74fa7b929';
 
 PORT = process.env.PORT || 5001;
 
