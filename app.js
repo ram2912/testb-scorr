@@ -148,7 +148,7 @@ PORT = process.env.PORT || 5001;
 
 // Scopes for this app will default to `crm.objects.contacts.read`
 // To request others, set the SCOPE environment variable instead
-const SCOPES = ['crm.objects.deals.read', 'crm.objects.contacts.read', 'crm.objects.custom.read', 'crm.schema.contacts.read'];
+const SCOPES = 'crm.objects.deals.read';
 
 if (process.env.SCOPE) {
     SCOPES = (process.env.SCOPE.split(/ |, ?|%20/)).join(' ');
