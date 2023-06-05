@@ -743,13 +743,13 @@ app.post('/webhook', async (req, res) => {
       const openai = new OpenAIApi(configuration);
       const prompt1 = `You are a revenue operator and responsible for finding insights on how your stages are performing. You are using a stage conversion rate funnel table with columns source stage, target stage, and conversion rates. You need to add two more columns to get a better understanding of the data in the table. Select two columns which suit the requirements the best from this dataset:
   
-      1. Conversion rate trend
-      2. Conversion rate change
-      3. Status
-      4. Reason
-      5. Average time in stage
+      Conversion rate trend
+      Conversion rate change
+      Status
+      Reason
+      Average time in stage
   
-      Give your response by stating the two best columns out of these five.\n\nA:`;
+      Give your response by stating the two best columns out of these five. Response format: "Answer: <column1> and <column2>" \n\nA:`;
   
       const response = await openai.createCompletion({
         model: "text-davinci-003",
@@ -758,16 +758,21 @@ app.post('/webhook', async (req, res) => {
         temperature: 0.7,
       });
   
-      const suggestedColumnsText = response.choices[0].text.trim().split('\nA:')[1].trim(); // Extract the suggested columns text from the API response
-      const suggestedColumns = suggestedColumnsText.split(',').map(column => column.trim()); // Split the columns by comma and trim each column
+      const suggestedColumnsText = response.data.choices[0].text;
+      const suggestedColumns = suggestedColumnsText
+        .replace('Answer:', '') // Remove the "Answer:" prefix
+        .trim() // Remove leading/trailing whitespaces
+        .split(' and ') // Split the columns by "and"
+        .map(column => column.trim()) // Trim each column
+        .map(column => column.replace(/[^\w\s]/g, '').trim());
   
       return suggestedColumns;
     } catch (error) {
       console.error(error);
       throw error;
-     
     }
   }
+  
   
   
 
