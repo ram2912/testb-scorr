@@ -742,7 +742,7 @@ app.post('/webhook', async (req, res) => {
         apiKey: process.env.OPENAI_API_KEY
       });
       const openAIApi = new OpenAIApi(configuration);
-      const prompt = `You are a revenue operator and responsible for finding insights on how your stages are performing. You are using a stage conversion rate funnel table with columns source stage, target stage, and conversion rates. You need to add two more columns to get a better understanding of the data in the table. Select two columns which suit the requirements the best from this dataset:
+      const prompt1 = `You are a revenue operator and responsible for finding insights on how your stages are performing. You are using a stage conversion rate funnel table with columns source stage, target stage, and conversion rates. You need to add two more columns to get a better understanding of the data in the table. Select two columns which suit the requirements the best from this dataset:
   
       1. Conversion rate trend
       2. Conversion rate change
@@ -750,12 +750,13 @@ app.post('/webhook', async (req, res) => {
       4. Reason
       5. Average time in stage
   
-      Give your response by stating the two best columns out of these five.`;
+      Give your response by stating the two best columns out of these five.\n\nA:`;
   
-      const response = await openAIApi.createCompletion(prompt, {
-        max_tokens: 64,
-        n: 1,
-        stop: ['\n']
+      const response = await openAIApi.createCompletion({
+        model: "text-davinci-003",
+        prompt: prompt1,
+        max_tokens: 100,
+        temperature: 0.7,
       });
   
       const chosenColumns = response.choices[0].text.trim().split('\n');
