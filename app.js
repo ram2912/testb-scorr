@@ -765,6 +765,7 @@ app.post('/webhook', async (req, res) => {
         const column = columnName.trim();
         suggestedColumns.push(column);
       }
+      return suggestedColumns;
   
       console.log(suggestedColumns);
     } catch (error) {
