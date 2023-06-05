@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
+const { Configuration, OpenAIApi } = require("openai");
 
 app.use(cors({
   origin: ['https://www.scorr-app.eu','http://localhost:3000', 'https://test.scorr-app.eu'],
@@ -446,6 +447,8 @@ app.get('/pipelinestage', async (req, res) => {
 
   
 
+  
+
 //properties with names and descriptions
 app.get('/properties', async (req, res) => {
     try {
@@ -730,6 +733,47 @@ app.post('/webhook', async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
+  async function getSuggestedColumns(columnNames) {
+    try {
+      const suggestedColumns = [];
+  
+      const configuration = new Configuration({
+        apiKey: process.env.OPENAI_API_KEY
+      });
+      const openAIApi = new OpenAIApi(configuration);
+      const prompt = `You are a revenue operator and responsible for finding insights on how your stages are performing. You are using a stage conversion rate funnel table with columns source stage, target stage, and conversion rates. You need to add two more columns to get a better understanding of the data in the table. Select two columns which suit the requirements the best from this dataset:
+  
+      1. Conversion rate trend
+      2. Conversion rate change
+      3. Status
+      4. Reason
+      5. Average time in stage
+  
+      Give your response by stating the two best columns out of these five.`;
+  
+      const response = await openAIApi.createCompletion(prompt, {
+        model: "text-davinci-003",
+    max_tokens: 100,
+    temperature: 0.7,
+        stop: ['\n']
+      });
+  
+      const chosenColumns = response.choices[0].text.trim().split('\n');
+  
+      for (const columnName of chosenColumns) {
+        const column = columnNames.find((column) => column === columnName.trim());
+        if (column) {
+          suggestedColumns.push(column);
+        }
+      }
+  
+      console.log(suggestedColumns);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  
 
   async function calculateStageConversionRates(funnelStages) {
     try {
