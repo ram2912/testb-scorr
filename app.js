@@ -355,27 +355,16 @@ const getPipeline = async (accessToken) => {
   }
 };
 
-const getPipelinestage = async (accessToken) => {
-
-try {
-   // Get the access token dynamically
-   // Pass the access token to the hubspotClient
-   const objectType = "deals";
-
-   const headers2 = {
-    Authorization: `Bearer ${accessToken}`,
-    'Content-Type': 'application/json'
-  };
-   const apiResponse = await request.get(`https://api.hubapi.com/crm/v3/pipelines/${objectType}`, {
-  headers: headers2
-}); return JSON.stringify(apiResponse, null, 2).stages;
+async function getPipelineStage(dealId) {
+  try {
+    const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
+    return deal.properties.pipelinestage;
+  } catch (error) {
+    console.error('Error retrieving pipeline stage:', error);
+    throw error;
+  }
 }
-catch (e) {
-  e.message === 'HTTP request failed'
-    ? console.error(JSON.stringify(e.response, null, 2))
-    : console.error(e);
-}
-};
+
 
 app.get('/pipelines', async (req, res) => {
   try {
@@ -554,11 +543,7 @@ app.post('/webhook', async (req, res) => {
       const accessToken = await getAccessToken(req.sessionID);
       const hubspotClient = new hubspot.Client({ accessToken });
 
-      const headers = {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      };
-  
+      
       // Log the incoming request body as JSON
       console.log('Received webhook:', JSON.stringify(req.body));
   
@@ -567,11 +552,9 @@ app.post('/webhook', async (req, res) => {
       const dealId = eventData.objectId;
       webhookDealId.push(dealId); // Store the dealId
 
-      const deal = await hubspotClient.crm.deals.basicApi.getById(dealId, {
-        headers: headers
-      });
+      const pipelineStage = await getPipelineStage(dealId);
 
-      console.log(JSON.stringify(deal, null, 2));
+      console.log('Pipeline stage:', pipelineStage);
       res.sendStatus(200);
     } catch (error) {
       console.error('Error handling webhook:', error);
