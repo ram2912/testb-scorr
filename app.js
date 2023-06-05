@@ -737,9 +737,9 @@ app.post('/webhook', async (req, res) => {
   async function getSuggestedColumns() {
     try {
       const configuration = new Configuration({
-        apiKey: process.env.OPENAI_API_KEY
+        apiKey: process.env.OPENAI_API_KEY,
       });
-      const openAIApi = new OpenAIApi(configuration);
+      const openai = new OpenAIApi(configuration);
       const prompt1 = `You are a revenue operator and responsible for finding insights on how your stages are performing. You are using a stage conversion rate funnel table with columns source stage, target stage, and conversion rates. You need to add two more columns to get a better understanding of the data in the table. Select two columns which suit the requirements the best from this dataset:
   
       1. Conversion rate trend
@@ -763,7 +763,8 @@ app.post('/webhook', async (req, res) => {
       return suggestedColumns;
     } catch (error) {
       console.error(error);
-      return [];
+      throw error;
+     
     }
   }
   
