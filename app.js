@@ -12,6 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require("openai");
 
+
 app.use(cors({
   origin: ['https://www.scorr-app.eu','http://localhost:3000', 'https://test.scorr-app.eu'],
   credentials: true
@@ -739,7 +740,7 @@ app.post('/webhook', async (req, res) => {
       const configuration = new Configuration({
         apiKey: process.env.OPENAI_API_KEY,
       });
-      const openAIApi = new OpenAIApi(configuration);
+      const openai = new OpenAIApi(configuration);
       const prompt1 = `You are a revenue operator and responsible for finding insights on how your stages are performing. You are using a stage conversion rate funnel table with columns source stage, target stage, and conversion rates. You need to add two more columns to get a better understanding of the data in the table. Select two columns which suit the requirements the best from this dataset:
   
       1. Conversion rate trend
@@ -750,7 +751,7 @@ app.post('/webhook', async (req, res) => {
   
       Give your response by stating the two best columns out of these five.\n\nA:`;
   
-      const response = await openAIApi.createCompletion({
+      const response = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: prompt1,
         max_tokens: 100,
@@ -780,10 +781,6 @@ app.post('/webhook', async (req, res) => {
     }
   });
   
-  // Start the server
-  app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-  });
   
   
 
