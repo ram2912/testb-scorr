@@ -812,12 +812,11 @@ app.post('/webhook', async (req, res) => {
   async function calculateStageConversionRates(funnelStages) {
     try {
       const conversionRates = [];
-      console.log(funnelStages);
   
       for (let i = 0; i < funnelStages.length - 1; i++) {
         const sourceStage = funnelStages[i].id;
         const targetStage = funnelStages[i + 1].id;
-
+  
         const sourceStageName = funnelStages[i].name;
         const targetStageName = funnelStages[i + 1].name;
   
@@ -844,7 +843,7 @@ app.post('/webhook', async (req, res) => {
             id: targetStage,
             name: targetStageName,
           },
-          conversionRate,
+          conversionRate: conversionRate > 100 ? "Invalid data" : conversionRate,
         };
   
         conversionRates.push(stageConversionRate);
@@ -856,6 +855,7 @@ app.post('/webhook', async (req, res) => {
       throw error;
     }
   }
+  
   
   
   
