@@ -568,6 +568,26 @@ app.post('/webhook', async (req, res) => {
       res.sendStatus(500);
     }
   });
+
+  app.get('/deal-properties', async (req, res) => {
+    try {
+      const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
+      const hubspotClient = new hubspot.Client({ accessToken });
+   
+      const deal1 = await hubspotClient.crm.deals.basicApi.getById("7754740725");
+
+      console.log(JSON.stringify(deal1, null, 2));
+
+      res.json(deal1);
+    } catch (error) {
+      console.error('Error retrieving deal:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
+      // Retrieve the properties for the specified dealID
+
+
   
   app.get('/deals', async (req, res) => {
     try {
@@ -741,7 +761,7 @@ app.post('/webhook', async (req, res) => {
         apiKey: process.env.OPENAI_API_KEY,
       });
       const openai = new OpenAIApi(configuration);
-      const prompt1 = `You are a revenue operator and responsible for finding insights on how your stages are performing. You are using a stage conversion rate funnel table with columns source stage, target stage, and conversion rates. You need to add two more columns to get a better understanding of the data in the table. Select two columns which suit the requirements the best from this dataset:
+      const prompt1 = `You are a revenue operator and responsible for finding insights on how your stages are performing, especially what is the trend in conversion rate. You are using a stage conversion rate funnel table with columns source stage, target stage, and conversion rates. You need to add two more columns to get a better understanding of the data in the table. Select two columns which suit the requirements the best from this dataset:
   
       Conversion rate trend
       Conversion rate change
