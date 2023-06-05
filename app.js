@@ -355,9 +355,9 @@ const getPipeline = async (accessToken) => {
   }
 };
 
-async function getPipelineStage(dealId) {
+async function getPipelineStage(dealId, accessToken) {
   try {
-    const accessToken = await getAccessToken(req.sessionID);
+    
       const hubspotClient = new hubspot.Client({ accessToken });
 
     const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
