@@ -561,6 +561,9 @@ app.post('/webhook', async (req, res) => {
       const eventData = req.body[0]; // Assuming there's only one event in the payload
       const dealId = eventData.objectId;
       webhookDealId.push(dealId); // Store the dealId
+
+      const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
+    console.log(JSON.stringify(deal, null, 2));
   
       res.sendStatus(200);
     } catch (error) {
