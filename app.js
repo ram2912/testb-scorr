@@ -555,7 +555,7 @@ app.post('/webhook', async (req, res) => {
       const dealId = eventData.objectId;
       webhookDealId.push(dealId); // Store the dealId
 
-      const pipelineStage = await getPipelineStage(dealId);
+      const pipelineStage = await getPipelineStage(dealId, accessToken);
 
       console.log('Pipeline stage:', pipelineStage);
       res.sendStatus(200);
