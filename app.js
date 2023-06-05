@@ -736,8 +736,6 @@ app.post('/webhook', async (req, res) => {
 
   async function getSuggestedColumns() {
     try {
-      const suggestedColumns = [];
-  
       const configuration = new Configuration({
         apiKey: process.env.OPENAI_API_KEY
       });
@@ -759,19 +757,16 @@ app.post('/webhook', async (req, res) => {
         temperature: 0.7,
       });
   
-      const chosenColumns = response.choices[0].text.trim().split('\n');
+      const suggestedColumnsText = response.choices[0].text.trim().split('\nA:')[1].trim(); // Extract the suggested columns text from the API response
+      const suggestedColumns = suggestedColumnsText.split(',').map(column => column.trim()); // Split the columns by comma and trim each column
   
-      for (const columnName of chosenColumns) {
-        const column = columnName.trim();
-        suggestedColumns.push(column);
-      }
       return suggestedColumns;
-  
-      console.log(suggestedColumns);
     } catch (error) {
       console.error(error);
+      return [];
     }
   }
+  
   
 
   // Define the route to test the getSuggestedColumns function
