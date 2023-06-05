@@ -843,7 +843,7 @@ app.post('/webhook', async (req, res) => {
             id: targetStage,
             name: targetStageName,
           },
-          conversionRate: conversionRate > 100 ? "Invalid data" : conversionRate,
+          conversionRate: conversionRate > 100 ? "Invalid data" : conversionRate.toFixed(0),
         };
   
         conversionRates.push(stageConversionRate);
