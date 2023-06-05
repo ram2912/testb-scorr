@@ -553,6 +553,11 @@ app.post('/webhook', async (req, res) => {
     try {
       const accessToken = await getAccessToken(req.sessionID);
       const hubspotClient = new hubspot.Client({ accessToken });
+
+      const headers = {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      };
   
       // Log the incoming request body as JSON
       console.log('Received webhook:', JSON.stringify(req.body));
@@ -562,9 +567,11 @@ app.post('/webhook', async (req, res) => {
       const dealId = eventData.objectId;
       webhookDealId.push(dealId); // Store the dealId
 
-      const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
-    console.log(JSON.stringify(deal, null, 2));
-  
+      const deal = await hubspotClient.crm.deals.basicApi.getById(dealId, {
+        headers: headers
+      });
+
+      console.log(JSON.stringify(deal, null, 2));
       res.sendStatus(200);
     } catch (error) {
       console.error('Error handling webhook:', error);
