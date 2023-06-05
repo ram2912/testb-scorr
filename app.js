@@ -357,6 +357,8 @@ const getPipeline = async (accessToken) => {
 
 async function getPipelineStage(dealId, accessToken) {
   try {
+
+    console.log('Access Token:', accessToken);
     
       const hubspotClient = new hubspot.Client({ accessToken });
 
@@ -554,6 +556,8 @@ app.post('/webhook', async (req, res) => {
       const eventData = req.body[0]; // Assuming there's only one event in the payload
       const dealId = eventData.objectId;
       webhookDealId.push(dealId); // Store the dealId
+
+      console.log('Access Token:', accessToken);
 
       const pipelineStage = await getPipelineStage(dealId, accessToken);
 
