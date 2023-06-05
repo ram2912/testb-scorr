@@ -734,7 +734,7 @@ app.post('/webhook', async (req, res) => {
     }
   });
 
-  async function getSuggestedColumns(columnNames) {
+  async function getSuggestedColumns() {
     try {
       const suggestedColumns = [];
   
@@ -753,19 +753,16 @@ app.post('/webhook', async (req, res) => {
       Give your response by stating the two best columns out of these five.`;
   
       const response = await openAIApi.createCompletion(prompt, {
-        model: "text-davinci-003",
-    max_tokens: 100,
-    temperature: 0.7,
+        max_tokens: 64,
+        n: 1,
         stop: ['\n']
       });
   
       const chosenColumns = response.choices[0].text.trim().split('\n');
   
       for (const columnName of chosenColumns) {
-        const column = columnNames.find((column) => column === columnName.trim());
-        if (column) {
-          suggestedColumns.push(column);
-        }
+        const column = columnName.trim();
+        suggestedColumns.push(column);
       }
   
       console.log(suggestedColumns);
@@ -773,6 +770,23 @@ app.post('/webhook', async (req, res) => {
       console.error(error);
     }
   }
+  
+
+  // Define the route to test the getSuggestedColumns function
+  app.get('/suggested-columns', async (req, res) => {
+    try {
+      const suggestedColumns = await getSuggestedColumns();
+      res.json({ suggestedColumns });
+    } catch (error) {
+      res.status(500).json({ error: 'An error occurred' });
+    }
+  });
+  
+  // Start the server
+  app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+  });
+  
   
 
   async function calculateStageConversionRates(funnelStages) {
