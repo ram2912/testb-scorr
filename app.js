@@ -11,6 +11,7 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require("openai");
+const fetch = require('node-fetch');
 
 
 app.use(cors({
@@ -559,12 +560,35 @@ app.post('/webhook', async (req, res) => {
 
       console.log('Access Token:', accessToken);
 
-      const pipelineStage = await getPipelineStage(dealId, accessToken);
+      const pipelineStageResponse = await fetch(`http://testback.scorr-app.eu/pipeline-stage?dealId=${dealId}`);
+      const pipelineStageData = await pipelineStageResponse.json();
 
-      console.log('Pipeline stage:', pipelineStage);
+      console.log('Pipeline stage:', pipelineStageData);
       res.sendStatus(200);
     } catch (error) {
       console.error('Error handling webhook:', error);
+      res.sendStatus(500);
+    }
+  });
+
+  app.get('/pipeline-stage', async (req, res) => {
+    try {
+      // Extract the dealId from the query parameters
+      const { dealId } = req.query;
+  
+      // Retrieve the pipeline stage using the dealId
+      const accessToken = await getAccessToken(req.sessionID);
+      const hubspotClient = new hubspot.Client({ accessToken });
+      const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
+      const pipelineStage = deal.properties.pipelinestage;
+  
+      // Perform any necessary operations with the pipeline stage
+      // For example, update the pipeline stage in your database or trigger another process
+  
+      console.log('Pipeline stage:', pipelineStage);
+      res.sendStatus(200);
+    } catch (error) {
+      console.error('Error retrieving pipeline stage:', error);
       res.sendStatus(500);
     }
   });
