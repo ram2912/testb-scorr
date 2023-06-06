@@ -808,6 +808,66 @@ app.post('/webhook', async (req, res) => {
       res.status(500).json({ error: 'An error occurred' });
     }
   });
+
+  async function generateConversionRateStatusAndReason(conversionRates) {
+    try {
+      const configuration = new Configuration({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+      const openai = new OpenAIApi(configuration);
+  
+      const results = [];
+  
+      for (const conversionRate of conversionRates) {
+        const { sourceStage, targetStage, conversionRate: rate } = conversionRate;
+  
+        const prompt = `Given the conversion rate ${rate} from stage "${sourceStage.name}" to stage "${targetStage.name}", determine the status and reason for this conversion rate.\n\nConversion rate: ${rate}\nSource Stage: "${sourceStage.name}"\nTarget Stage: "${targetStage.name}"\nStatus:`;
+  
+        const response = await openai.createCompletion({
+          model: 'text-davinci-003',
+          prompt: prompt,
+          max_tokens: 100,
+          temperature: 0.7,
+        });
+  
+        const status = response.data.choices[0].text.trim();
+  
+        // Generate reason based on the status and stages
+        let reason = '';
+        if (status === 'High') {
+          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is high due to effective strategies and optimized processes.`;
+        } else if (status === 'Low') {
+          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is low due to various factors such as poor user experience and inadequate marketing efforts.`;
+        } else {
+          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is at an average level with room for improvement.`;
+        }
+  
+        const result = {
+          ...conversionRate,
+          status: status,
+          reason: reason,
+        };
+  
+        results.push(result);
+      }
+  
+      return results;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  app.get('/conversion-rate-status-and-reason', async (req, res) => {
+    try {
+      const conversionRates = await calculateStageConversionRates(funnelStages);
+      const conversionRatesWithStatusAndReason = await generateConversionRateStatusAndReason(conversionRates);
+      res.json({ conversionRatesWithStatusAndReason });
+    } catch (error) {
+      console.error('Error calculating conversion rates:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
   
   
   
