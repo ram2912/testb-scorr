@@ -590,7 +590,7 @@ app.post('/webhook', async (req, res) => {
 
   
       app.get('/deals', async (req, res) => {
-        const handleDealsEndpoint = async () => {
+        
           try {
             const accessToken = await getAccessToken(req.sessionID);
             const hubspotClient = new hubspot.Client({ accessToken });
@@ -633,18 +633,10 @@ app.post('/webhook', async (req, res) => {
             console.error('Error retrieving deal:', error);
             res.status(500).json({ error: 'Internal Server Error' });
           }
-        };
+        
       
-        // Call the handleDealsEndpoint function immediately
-        handleDealsEndpoint();
-      
-        // Refresh the /deals endpoint every 10 seconds
-        const refreshInterval = 10 * 1000; // 10 seconds in milliseconds
-      
-        setInterval(() => {
-          handleDealsEndpoint();
-        }, refreshInterval);
       });
+       
       
 
 
