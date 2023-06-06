@@ -560,35 +560,12 @@ app.post('/webhook', async (req, res) => {
 
       console.log('Access Token:', accessToken);
 
-      const pipelineStageResponse = await fetch(`http://testback.scorr-app.eu/pipeline-stage?dealId=${dealId}`);
-      const pipelineStageData = await pipelineStageResponse.json();
+      
 
-      console.log('Pipeline stage:', pipelineStageData);
-      res.sendStatus(200);
-    } catch (error) {
-      console.error('Error handling webhook:', error);
-      res.sendStatus(500);
-    }
-  });
-
-  app.get('/pipeline-stage', async (req, res) => {
-    try {
-      // Extract the dealId from the query parameters
-      const { dealId } = req.query;
-  
-      // Retrieve the pipeline stage using the dealId
-      const accessToken = await getAccessToken(req.sessionID);
-      const hubspotClient = new hubspot.Client({ accessToken });
-      const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
-      const pipelineStage = deal.properties.pipelinestage;
-  
-      // Perform any necessary operations with the pipeline stage
-      // For example, update the pipeline stage in your database or trigger another process
-  
       console.log('Pipeline stage:', pipelineStage);
       res.sendStatus(200);
     } catch (error) {
-      console.error('Error retrieving pipeline stage:', error);
+      console.error('Error handling webhook:', error);
       res.sendStatus(500);
     }
   });
@@ -612,52 +589,63 @@ app.post('/webhook', async (req, res) => {
       // Retrieve the properties for the specified dealID
 
 
-  
-  app.get('/deals', async (req, res) => {
-    try {
-      const accessToken = await getAccessToken(req.sessionID);
-      const hubspotClient = new hubspot.Client({ accessToken });
-  
-      // Retrieve the deal using the stored dealId
-      const deal = await Promise.all(
-        webhookDealId.map((dealId) => hubspotClient.crm.deals.basicApi.getById(dealId))
-      );
-      console.log(JSON.stringify(deal, null, 2));
-
-      // Clear the stored dealId
-
-      const query = `
-      INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    `;
-
-    // Generate a new UUID for the id column
-    const values = deal.map((deal) => [
-        uuidv4(),
-        deal.properties.amount,
-        deal.properties.closedate,
-        deal.properties.createdate,
-        deal.properties.dealname,
-        deal.properties.dealstage,
-        deal.properties.hs_lastmodifieddate,
-        deal.properties.hs_object_id,
-        deal.properties.pipeline
-      ]);
-
-
-      await Promise.all(
-        values.map((dealValues) => pool.query(query, dealValues))
-      );
-
-      webhookDealId = [];
-  
-      // Send the deal data as a JSON response
-      res.json(deal);
-    } catch (error) {
-      console.error('Error retrieving deal:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+      app.get('/deals', async (req, res) => {
+        const handleDealsEndpoint = async () => {
+          try {
+            const accessToken = await getAccessToken(req.sessionID);
+            const hubspotClient = new hubspot.Client({ accessToken });
+      
+            // Retrieve the deal using the stored dealId
+            const deal = await Promise.all(
+              webhookDealId.map((dealId) => hubspotClient.crm.deals.basicApi.getById(dealId))
+            );
+            console.log(JSON.stringify(deal, null, 2));
+      
+            // Clear the stored dealId
+      
+            const query = `
+              INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            `;
+      
+            // Generate a new UUID for the id column
+            const values = deal.map((deal) => [
+              uuidv4(),
+              deal.properties.amount,
+              deal.properties.closedate,
+              deal.properties.createdate,
+              deal.properties.dealname,
+              deal.properties.dealstage,
+              deal.properties.hs_lastmodifieddate,
+              deal.properties.hs_object_id,
+              deal.properties.pipeline
+            ]);
+      
+            await Promise.all(
+              values.map((dealValues) => pool.query(query, dealValues))
+            );
+      
+            webhookDealId = [];
+      
+            // Send the deal data as a JSON response
+            res.json(deal);
+          } catch (error) {
+            console.error('Error retrieving deal:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+          }
+        };
+      
+        // Call the handleDealsEndpoint function immediately
+        handleDealsEndpoint();
+      
+        // Refresh the /deals endpoint every 10 seconds
+        const refreshInterval = 10 * 1000; // 10 seconds in milliseconds
+      
+        setInterval(() => {
+          handleDealsEndpoint();
+        }, refreshInterval);
+      });
+      
   
 
 
