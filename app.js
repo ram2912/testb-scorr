@@ -11,7 +11,6 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require("openai");
-const fetch = require('node-fetch');
 
 
 app.use(cors({
@@ -356,21 +355,27 @@ const getPipeline = async (accessToken) => {
   }
 };
 
-async function getPipelineStage(dealId, accessToken) {
-  try {
+const getPipelinestage = async (accessToken) => {
 
-    console.log('Access Token:', accessToken);
-    
-      const hubspotClient = new hubspot.Client({ accessToken });
+try {
+   // Get the access token dynamically
+   // Pass the access token to the hubspotClient
+   const objectType = "deals";
 
-    const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
-    return deal.properties.pipelinestage;
-  } catch (error) {
-    console.error('Error retrieving pipeline stage:', error);
-    throw error;
-  }
+   const headers2 = {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json'
+  };
+   const apiResponse = await request.get(`https://api.hubapi.com/crm/v3/pipelines/${objectType}`, {
+  headers: headers2
+}); return JSON.stringify(apiResponse, null, 2).stages;
 }
-
+catch (e) {
+  e.message === 'HTTP request failed'
+    ? console.error(JSON.stringify(e.response, null, 2))
+    : console.error(e);
+}
+};
 
 app.get('/pipelines', async (req, res) => {
   try {
@@ -548,8 +553,7 @@ app.post('/webhook', async (req, res) => {
     try {
       const accessToken = await getAccessToken(req.sessionID);
       const hubspotClient = new hubspot.Client({ accessToken });
-
-      
+  
       // Log the incoming request body as JSON
       console.log('Received webhook:', JSON.stringify(req.body));
   
@@ -557,12 +561,7 @@ app.post('/webhook', async (req, res) => {
       const eventData = req.body[0]; // Assuming there's only one event in the payload
       const dealId = eventData.objectId;
       webhookDealId.push(dealId); // Store the dealId
-
-      console.log('Access Token:', accessToken);
-
-      
-
-      console.log('Pipeline stage:', pipelineStage);
+  
       res.sendStatus(200);
     } catch (error) {
       console.error('Error handling webhook:', error);
@@ -589,6 +588,7 @@ app.post('/webhook', async (req, res) => {
       // Retrieve the properties for the specified dealID
 
 
+  
       app.get('/deals', async (req, res) => {
         const handleDealsEndpoint = async () => {
           try {
@@ -646,7 +646,6 @@ app.post('/webhook', async (req, res) => {
         }, refreshInterval);
       });
       
-  
 
 
   app.post('/store-pipelines', async (req, res) => {
