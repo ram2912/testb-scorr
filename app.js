@@ -822,6 +822,8 @@ app.post('/webhook', async (req, res) => {
         const { sourceStage, targetStage, conversionRate: rate } = conversionRate;
   
         const prompt = `Given the conversion rate ${rate} from stage "${sourceStage.name}" to stage "${targetStage.name}", determine the status and reason for this conversion rate.\n\nConversion rate: ${rate}\nSource Stage: "${sourceStage.name}"\nTarget Stage: "${targetStage.name}"\nStatus:`;
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
   
         const response = await openai.createCompletion({
           model: 'text-davinci-003',
