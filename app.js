@@ -818,38 +818,43 @@ app.post('/webhook', async (req, res) => {
   
       const results = [];
   
+      const maxRetries = 5; // Maximum number of retries
+      const baseDelay = 1000; // Base delay in milliseconds
+  
       for (const conversionRate of conversionRates) {
         const { sourceStage, targetStage, conversionRate: rate } = conversionRate;
   
         const prompt = `Given the conversion rate ${rate} from stage "${sourceStage.name}" to stage "${targetStage.name}", determine the status and reason for this conversion rate.\n\nConversion rate: ${rate}\nSource Stage: "${sourceStage.name}"\nTarget Stage: "${targetStage.name}"\nStatus:`;
   
-        let response;
-        let retryCount = 0;
-        const maxRetries = 5;
-        const baseDelay = 1000;
+        let status = '';
+        let retries = 0;
+        let delay = baseDelay;
   
-        while (true) {
+        while (!status && retries <= maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+  
           try {
-            await new Promise((resolve) => setTimeout(resolve, retryCount * baseDelay));
-  
-            response = await openai.createCompletion({
+            const response = await openai.createCompletion({
               model: 'text-davinci-003',
               prompt: prompt,
               max_tokens: 100,
               temperature: 0.7,
             });
   
-            break;
+            status = response.data.choices[0].text.trim();
           } catch (error) {
-            if (error.response && error.response.status === 429 && retryCount < maxRetries) {
-              retryCount++;
+            if (error.response && error.response.status === 429) {
+              // Rate limit error, handle appropriately
+              console.log('Rate limit exceeded. Waiting before retrying...');
+              retries++;
+              delay *= 2; // Exponential backoff delay
             } else {
+              // Other error occurred, handle appropriately
+              console.error(error);
               throw error;
             }
           }
         }
-  
-        const status = response.data.choices[0].text.trim();
   
         // Generate reason based on the status and stages
         let reason = '';
@@ -876,6 +881,7 @@ app.post('/webhook', async (req, res) => {
       throw error;
     }
   }
+  
 
   app.get('/conversion-rate-status-and-reason', async (req, res) => {
     try {
