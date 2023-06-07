@@ -836,22 +836,10 @@ app.post('/webhook', async (req, res) => {
 
   
         // Generate reason based on the status and stages
-        let reason = '';
-        if (status === 'High') {
-          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is high due to effective strategies and optimized processes.`;
-        } else if (status === 'Low') {
-          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is low due to various factors such as poor user experience and inadequate marketing efforts.`;
-        } else {
-          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is at an average level with room for improvement.`;
-        }
+       
+        
   
-        const result = {
-          ...conversionRate,
-          status: status,
-          reason: reason,
-        };
-  
-        results.push(result);
+        results.push(status);
       }
   
       return results;
@@ -863,7 +851,7 @@ app.post('/webhook', async (req, res) => {
 
   app.get('/conversion-rate-status-and-reason', async (req, res) => {
     try {
-      const conversionRates = await calculateStageConversionRates(funnelStages);
+     
       const conversionRatesWithStatusAndReason = await generateConversionRateStatusAndReason(conversionRates);
       res.json({ conversionRatesWithStatusAndReason });
     } catch (error) {
