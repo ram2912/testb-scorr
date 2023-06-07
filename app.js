@@ -823,7 +823,7 @@ app.post('/webhook', async (req, res) => {
   
         const prompt = `Given the conversion rate ${rate} from stage "${sourceStage.name}" to stage "${targetStage.name}", determine the status and reason for this conversion rate.\n\nConversion rate: ${rate}\nSource Stage: "${sourceStage.name}"\nTarget Stage: "${targetStage.name}"\nStatus:`;
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
   
         const response = await openai.createCompletion({
           model: 'text-davinci-003',
@@ -833,6 +833,7 @@ app.post('/webhook', async (req, res) => {
         });
   
         const status = response.data.choices[0].text.trim();
+
   
         // Generate reason based on the status and stages
         let reason = '';
