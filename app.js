@@ -819,7 +819,7 @@ app.post('/webhook', async (req, res) => {
       const results = [];
   
       const maxRetries = 5; // Maximum number of retries
-      const baseDelay = 1000; // Base delay in milliseconds
+      const baseDelay = 30000; // Base delay in milliseconds
   
       for (const conversionRate of conversionRates) {
         const { sourceStage, targetStage, conversionRate: rate } = conversionRate;
