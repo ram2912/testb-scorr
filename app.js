@@ -822,24 +822,52 @@ app.post('/webhook', async (req, res) => {
         const { sourceStage, targetStage, conversionRate: rate } = conversionRate;
   
         const prompt = `Given the conversion rate ${rate} from stage "${sourceStage.name}" to stage "${targetStage.name}", determine the status and reason for this conversion rate.\n\nConversion rate: ${rate}\nSource Stage: "${sourceStage.name}"\nTarget Stage: "${targetStage.name}"\nStatus:`;
-
-        await new Promise((resolve) => setTimeout(resolve, 2000));
   
-        const response = await openai.createCompletion({
-          model: 'text-davinci-003',
-          prompt: prompt,
-          max_tokens: 100,
-          temperature: 0.7,
-        });
+        let response;
+        let retryCount = 0;
+        const maxRetries = 5;
+        const baseDelay = 1000;
+  
+        while (true) {
+          try {
+            await new Promise((resolve) => setTimeout(resolve, retryCount * baseDelay));
+  
+            response = await openai.createCompletion({
+              model: 'text-davinci-003',
+              prompt: prompt,
+              max_tokens: 100,
+              temperature: 0.7,
+            });
+  
+            break;
+          } catch (error) {
+            if (error.response && error.response.status === 429 && retryCount < maxRetries) {
+              retryCount++;
+            } else {
+              throw error;
+            }
+          }
+        }
   
         const status = response.data.choices[0].text.trim();
-
   
         // Generate reason based on the status and stages
-       
-        
+        let reason = '';
+        if (status === 'High') {
+          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is high due to effective strategies and optimized processes.`;
+        } else if (status === 'Low') {
+          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is low due to various factors such as poor user experience and inadequate marketing efforts.`;
+        } else {
+          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is at an average level with room for improvement.`;
+        }
   
-        results.push(status);
+        const result = {
+          ...conversionRate,
+          status: status,
+          reason: reason,
+        };
+  
+        results.push(result);
       }
   
       return results;
