@@ -851,7 +851,7 @@ app.post('/webhook', async (req, res) => {
 
   app.get('/conversion-rate-status-and-reason', async (req, res) => {
     try {
-     
+      const conversionRates = await calculateStageConversionRates(funnelStages);
       const conversionRatesWithStatusAndReason = await generateConversionRateStatusAndReason(conversionRates);
       res.json({ conversionRatesWithStatusAndReason });
     } catch (error) {
