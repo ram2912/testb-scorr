@@ -332,11 +332,12 @@ const getAccessToken = async () => {
     accessToken = await getAccessTokenFromStorage();
 
     // Store the retrieved access token in the cache
-    accessTokenCache.set('access_token', accessToken, expirationTime);
+    accessTokenCache.set('access_token', accessToken);
   }
 
   return accessToken;
 };
+
 
 
 const isAuthorized = (userId) => {
