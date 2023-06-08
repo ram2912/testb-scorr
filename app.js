@@ -245,7 +245,7 @@ app.get('/oauth-callback', async (req, res) => {
 
     console.log(token);
 
-    storeAccessToken(token);
+    await storeAccessToken(token);
 
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
