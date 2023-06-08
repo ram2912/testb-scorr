@@ -238,7 +238,7 @@ app.get('/oauth-callback', async (req, res) => {
     // Step 4
     // Exchange the authorization code for an access token and refresh token
     console.log('===> Step 4: Exchanging authorization code for an access token and refresh token');
-    const token = await exchangeForTokens(authCodeProof,userId);
+    const token = await exchangeForTokens(authCodeProof,req.sessionID);
     if (token.message) {
       return res.redirect(`/error?msg=${token.message}`);
     }
