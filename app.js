@@ -243,6 +243,8 @@ app.get('/oauth-callback', async (req, res) => {
       return res.redirect(`/error?msg=${token.message}`);
     }
 
+    console.log(token);
+
     storeAccessToken(token.access_token);
 
     // Once the tokens have been retrieved, use them to make a query
@@ -350,7 +352,6 @@ app.get('/authorization-status', (req, res) => {
     res.status(401).json({ status: 'unauthorized' });
   }
 });
-
 //====================================================//
 //   Using an Access Token to Query the HubSpot API   //
 //====================================================//
