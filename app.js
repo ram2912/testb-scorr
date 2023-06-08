@@ -238,10 +238,12 @@ app.get('/oauth-callback', async (req, res) => {
     // Step 4
     // Exchange the authorization code for an access token and refresh token
     console.log('===> Step 4: Exchanging authorization code for an access token and refresh token');
-    const token = await exchangeForTokens(req.sessionID, authCodeProof);
+    const token = await exchangeForTokens(authCodeProof);
     if (token.message) {
       return res.redirect(`/error?msg=${token.message}`);
     }
+
+    storeAccessToken(token.access_token);
 
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
@@ -254,7 +256,7 @@ app.get('/oauth-callback', async (req, res) => {
 //   Exchanging Proof for an Access Token   //
 //==========================================//
 
-const exchangeForTokens = async (userId, exchangeProof) => {
+const exchangeForTokens = async (exchangeProof) => {
   try {
     const responseBody = await request.post('https://api.hubapi.com/oauth/v1/token', {
       form: exchangeProof
@@ -273,7 +275,39 @@ const exchangeForTokens = async (userId, exchangeProof) => {
   }
 };
 
-const refreshAccessToken = async (userId) => {
+const storeAccessToken = async (accessToken) => {
+  const query = 'INSERT INTO access_tokens (token) VALUES ($1)';
+  const values = [accessToken];
+
+  try {
+    await pool.query(query, values);
+    console.log('Access token stored successfully');
+  } catch (error) {
+    console.error('Error storing access token:', error);
+  }
+};
+
+const getAccessTokenFromStorage = async () => {
+  const query = 'SELECT token FROM access_tokens ORDER BY id DESC LIMIT 1';
+
+  try {
+    const result = await pool.query(query);
+    if (result.rows.length > 0) {
+      const accessToken = result.rows[0].token;
+      console.log('Access token retrieved successfully');
+      return accessToken;
+    } else {
+      console.log('No access token found in the database');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error retrieving access token:', error);
+    return null;
+  }
+};
+
+
+const refreshAccessToken = async () => {
   const refreshTokenProof = {
     grant_type: 'refresh_token',
     client_id: CLIENT_ID,
@@ -281,18 +315,27 @@ const refreshAccessToken = async (userId) => {
     redirect_uri: REDIRECT_URI,
     refresh_token: refreshTokenStore[userId]
   };
-  return await exchangeForTokens(userId, refreshTokenProof);
+  const token = await exchangeForTokens(refreshTokenProof);
+  if (token.message) {
+    // Handle the error case
+  } else {
+    storeAccessToken(token.access_token);
+  }
 };
 
-const getAccessToken = async (userId) => {
-  // If the access token has expired, retrieve
-  // a new one using the refresh token
-  if (!accessTokenCache.get(userId)) {
-    console.log('Refreshing expired access token');
-    await refreshAccessToken(userId);
+const getAccessToken = async () => {
+  let accessToken = accessTokenCache.get('access_token');
+
+  if (!accessToken) {
+    accessToken = await getAccessTokenFromStorage();
+
+    // Store the retrieved access token in the cache
+    accessTokenCache.set('access_token', accessToken, expirationTime);
   }
-  return accessTokenCache.get(userId);
+
+  return accessToken;
 };
+
 
 const isAuthorized = (userId) => {
   return refreshTokenStore[userId] ? true : false;
@@ -424,7 +467,7 @@ app.get('/pipelines2', async (req, res) => {
 
 app.get('/pipelinestage', async (req, res) => {
     try {
-      const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
+      const accessToken = await getAccessToken();// Get the access token dynamically
       const hubspotClient = new hubspot.Client({ accessToken });
       const objectType = "deals";
       const pipelineId = "27911521";
