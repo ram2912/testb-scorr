@@ -256,7 +256,7 @@ app.get('/oauth-callback', async (req, res) => {
 //   Exchanging Proof for an Access Token   //
 //==========================================//
 
-const exchangeForTokens = async (exchangeProof) => {
+const exchangeForTokens = async (exchangeProof, userId) => {
   try {
     const responseBody = await request.post('https://api.hubapi.com/oauth/v1/token', {
       form: exchangeProof
