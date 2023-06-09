@@ -309,7 +309,7 @@ const getAccessTokenFromStorage = async () => {
 };
 
 
-const refreshAccessToken = async () => {
+const refreshAccessToken = async (userId) => {
   const refreshTokenProof = {
     grant_type: 'refresh_token',
     client_id: CLIENT_ID,
@@ -335,8 +335,35 @@ const getAccessToken = async () => {
     accessTokenCache.set('access_token', accessToken);
   }
 
+  // Check if the access token is expired
+  const isExpired = await isAccessTokenExpired(accessToken);
+  if (isExpired) {
+    await refreshAccessToken();
+    accessToken = accessTokenCache.get('access_token');
+  }
+
   return accessToken;
 };
+
+const isAccessTokenExpired = async (accessToken) => {
+  try {
+    // Make an API call to check the access token's expiration status
+    const response = await request.get('https://api.hubapi.com/oauth/v1/access-tokens/' + accessToken);
+    const tokenInfo = JSON.parse(response.body);
+    
+    // Get the expiration timestamp from the token info
+    const expirationTimestamp = tokenInfo.expiresAt;
+    
+    // Compare the expiration timestamp with the current time
+    const currentTime = Date.now() / 1000; // Convert to seconds
+    return expirationTimestamp <= currentTime;
+  } catch (error) {
+    console.error('Error checking access token expiration:', error);
+    return false; // Treat as non-expired if an error occurs
+  }
+};
+
+
 
 
 
@@ -491,43 +518,7 @@ app.get('/pipelinestage', async (req, res) => {
     }
   });
 
-  
 
-  
-
-//properties with names and descriptions
-app.get('/properties', async (req, res) => {
-    try {
-      if (isAuthorized(req.sessionID)){
-      const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
-      const hubspotClient = new hubspot.Client({ accessToken });
-      const objectType = "deals";
-      const archived = false;
-      const properties = undefined;
-  
-      // Retrieve the properties for the specified stage
-      const apiResponse = await hubspotClient.crm.properties.coreApi.getAll(objectType, archived, properties);
-      // Extract the relevant fields from the stage properties
-      
-      const propertyNames = apiResponse.results.map((property) => {
-        return {
-            name: property.name,
-            description: property.description
-            
-        };
-        });
-        res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-        res.header('Access-Control-Allow-Credentials', true);
-      res.json(propertyNames, null, 2);
-      }else{
-        res.status(401).json({ error: 'Unauthorized' });
-      }
-    } catch (e) {
-        e.message === 'HTTP request failed'
-        ? console.error(JSON.stringify(e.response, null, 2))
-        : console.error(e)
-    }
-});
 
 
   
@@ -659,55 +650,6 @@ app.post('/webhook', async (req, res) => {
 
 
   
-      app.get('/deals', async (req, res) => {
-        
-          try {
-            const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
-            const accessToken = await accessTokenPromise;  // Get the access token dynamically
-            console.log(accessToken);
-            const hubspotClient = new hubspot.Client({ accessToken });
-      
-            // Retrieve the deal using the stored dealId
-            const deal = await Promise.all(
-              webhookDealId.map((dealId) => hubspotClient.crm.deals.basicApi.getById(dealId))
-            );
-            console.log(JSON.stringify(deal, null, 2));
-      
-            // Clear the stored dealId
-      
-            const query = `
-              INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            `;
-      
-            // Generate a new UUID for the id column
-            const values = deal.map((deal) => [
-              uuidv4(),
-              deal.properties.amount,
-              deal.properties.closedate,
-              deal.properties.createdate,
-              deal.properties.dealname,
-              deal.properties.dealstage,
-              deal.properties.hs_lastmodifieddate,
-              deal.properties.hs_object_id,
-              deal.properties.pipeline
-            ]);
-      
-            await Promise.all(
-              values.map((dealValues) => pool.query(query, dealValues))
-            );
-      
-            webhookDealId = [];
-      
-            // Send the deal data as a JSON response
-            res.json(deal);
-          } catch (error) {
-            console.error('Error retrieving deal:', error);
-            res.status(500).json({ error: 'Internal Server Error' });
-          }
-        
-      
-      });
        
       
 
@@ -967,9 +909,6 @@ app.post('/webhook', async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-  
-  
-  
 
   async function calculateStageConversionRates(funnelStages) {
     try {
