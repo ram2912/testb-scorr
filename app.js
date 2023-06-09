@@ -607,7 +607,28 @@ app.post('/webhook', async (req, res) => {
       // Extract relevant data from the webhook payload
       const eventData = req.body[0]; // Assuming there's only one event in the payload
       const dealId = eventData.objectId;
-      webhookDealId.push(dealId); // Store the dealId
+      const deal = await hubspotClient.crm.deals.basicApi.getById(dealId);
+      console.log(JSON.stringify(deal, null, 2));
+  
+      // Store the deal properties in the database
+      const query = `
+        INSERT INTO deals (id, amount, closedate, createdate, dealname, dealstage, hs_lastmodifieddate, hs_object_id, pipeline)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `;
+  
+      const values = [
+        uuidv4(),
+        deal.properties.amount,
+        deal.properties.closedate,
+        deal.properties.createdate,
+        deal.properties.dealname,
+        deal.properties.dealstage,
+        deal.properties.hs_lastmodifieddate,
+        deal.properties.hs_object_id,
+        deal.properties.pipeline
+      ];
+  
+      await pool.query(query, values);
   
       res.sendStatus(200);
     } catch (error) {
