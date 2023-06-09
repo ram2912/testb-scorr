@@ -616,9 +616,9 @@ app.post('/webhook', async (req, res) => {
 
   app.get('/deal-properties', async (req, res) => {
     try {
-      const accessToken = getAccessTokenFromStorage(); // Get the access token dynamically
+      const accessToken = getAccessToken(); // Get the access token dynamically
       console.log(accessToken);
-      const hubspotClient = new hubspot.Client({ "accessToken":accessToken });
+      const hubspotClient = new hubspot.Client({ accessToken });
    
       const deal1 = await hubspotClient.crm.deals.basicApi.getById("7754740725");
 
