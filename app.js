@@ -596,7 +596,9 @@ let webhookDealId=[];
 
 app.post('/webhook', async (req, res) => {
     try {
-      const accessToken = await getAccessToken(req.sessionID);
+      const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
+      const accessToken = await accessTokenPromise;  // Get the access token dynamically
+      console.log(accessToken);
       const hubspotClient = new hubspot.Client({ accessToken });
   
       // Log the incoming request body as JSON
@@ -639,7 +641,9 @@ app.post('/webhook', async (req, res) => {
       app.get('/deals', async (req, res) => {
         
           try {
-            const accessToken = await getAccessToken(req.sessionID);
+            const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
+            const accessToken = await accessTokenPromise;  // Get the access token dynamically
+            console.log(accessToken);
             const hubspotClient = new hubspot.Client({ accessToken });
       
             // Retrieve the deal using the stored dealId
@@ -707,7 +711,9 @@ app.post('/webhook', async (req, res) => {
 
   app.get('/pipelines-stages', async (req, res) => {
     try {
-      const accessToken = await getAccessToken(req.sessionID); // Get the access token dynamically
+      const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
+      const accessToken = await accessTokenPromise;  // Get the access token dynamically
+      console.log(accessToken);
       const hubspotClient = new hubspot.Client({ accessToken });
       const objectType = "deals";
 
