@@ -238,14 +238,15 @@ app.get('/oauth-callback', async (req, res) => {
     // Step 4
     // Exchange the authorization code for an access token and refresh token
     console.log('===> Step 4: Exchanging authorization code for an access token and refresh token');
-    const token = await exchangeForTokens(authCodeProof,req.sessionID);
-    if (token.message) {
-      return res.redirect(`/error?msg=${token.message}`);
+    const tokens = await exchangeForTokens(authCodeProof,req.sessionID);
+    console.log(req.sessionID);
+    if (tokens.message) {
+      return res.redirect(`/error?msg=${tokens.message}`);
     }
 
-    console.log(token);
+    console.log(tokens);
 
-    await storeAccessToken(token);
+    await storeAccessToken(tokens.access_token, tokens.refresh_token);
 
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
@@ -270,16 +271,16 @@ const exchangeForTokens = async (exchangeProof, userId) => {
     accessTokenCache.set(userId, tokens.access_token, Math.round(tokens.expires_in * 0.75));
 
     console.log('       > Received an access token and refresh token');
-    return tokens.access_token;
+    return tokens;
   } catch (e) {
     console.error(`       > Error exchanging ${exchangeProof.grant_type} for access token`);
     return JSON.parse(e.response.body);
   }
 };
 
-const storeAccessToken = async (accessToken) => {
-  const query = 'INSERT INTO access_tokens (token) VALUES ($1)';
-  const values = [accessToken];
+const storeAccessToken = async (accessToken, refreshToken) => {
+  const query = 'INSERT INTO access_tokens (access_token, refresh_token) VALUES ($1, $2)';
+  const values = [accessToken, refreshToken];
 
   try {
     await pool.query(query, values);
@@ -290,7 +291,7 @@ const storeAccessToken = async (accessToken) => {
 };
 
 const getAccessTokenFromStorage = async () => {
-  const query = 'SELECT token FROM access_tokens ORDER BY id DESC LIMIT 1';
+  const query = 'SELECT access_token FROM access_tokens ORDER BY id DESC LIMIT 1';
 
   try {
     const result = await pool.query(query);
@@ -308,20 +309,42 @@ const getAccessTokenFromStorage = async () => {
   }
 };
 
+const getRefreshTokenFromStorage = async () => {
+  const query = 'SELECT refresh_token FROM access_tokens ORDER BY id DESC LIMIT 1';
 
-const refreshAccessToken = async (userId) => {
+  try {
+    const result = await pool.query(query);
+    if (result.rows.length > 0) {
+      const refreshToken = result.rows[0].token;
+      console.log('Refresh token retrieved successfully');
+      return refreshToken;
+    } else {
+      console.log('No refresh token found in the database');
+      return null;
+    }
+  } catch (error) {
+    console.error('Error retrieving refresh token:', error);
+    return null;
+  }
+};
+
+const refreshAccessToken = async () => {
+
+  refreshToken = await getRefreshTokenFromStorage();
   const refreshTokenProof = {
     grant_type: 'refresh_token',
     client_id: CLIENT_ID,
     client_secret: CLIENT_SECRET,
     redirect_uri: REDIRECT_URI,
-    refresh_token: refreshTokenStore[userId]
+    refresh_token: refreshToken
   };
-  const token = await exchangeForTokens(refreshTokenProof);
-  if (token.message) {
+  const tokens = await exchangeForTokens(refreshTokenProof);
+  if (tokens.message) {
     // Handle the error case
   } else {
-    storeAccessToken(token.access_token);
+    const { access_token, refresh_token } = tokens;
+
+    storeAccessToken(access_token, refresh_token);
   }
 };
 
