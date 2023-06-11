@@ -245,9 +245,6 @@ app.get('/oauth-callback', async (req, res) => {
     }
 
     console.log(tokens);
-
-    
-
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
     
@@ -270,13 +267,14 @@ const exchangeForTokens = async (exchangeProof,userId) => {
     // a user identity.
     const tokens = JSON.parse(responseBody);
     console.log(tokens);
-    refreshTokenStore[userId] = tokens.refresh_token;
+
+    await storeAccessToken(tokens.access_token, tokens.refresh_token);
+
+    refreshTokenStore = tokens.refresh_token;
     accessTokenCache.set(userId, tokens.access_token, Math.round(tokens.expires_in * 0.75));
 
     console.log('       > Received an access token and refresh token');
 
-    await storeAccessToken(tokens.access_token, tokens.refresh_token);
-    
     return tokens;
   } catch (e) {
     console.error(`       > Error exchanging ${exchangeProof.grant_type} for access token`);
@@ -709,12 +707,6 @@ app.post('/webhook', async (req, res) => {
   });
 
       // Retrieve the properties for the specified dealID
-
-
-  
-       
-      
-
 
   app.post('/store-pipelines', async (req, res) => {
     const { funnelName, leadPipeline, bdrPipeline, salesPipeline } = req.body;
