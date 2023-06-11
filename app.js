@@ -374,7 +374,7 @@ const isAccessTokenExpired = async (accessToken) => {
     console.log(accessToken);
     const hubspotClient = new hubspot.Client({ accessToken });
     // Make an API call to check the access token's expiration status
-    const response = await await hubspotClient.oauth.accessTokensApi.get(accessToken);
+    const response = await hubspotClient.oauth.accessTokensApi.get(accessToken);
     const responseBody = response.body;
     console.log(JSON.stringify(responseBody, null, 2));
     
