@@ -270,7 +270,7 @@ const exchangeForTokens = async (exchangeProof,userId) => {
 
     await storeAccessToken(tokens.access_token, tokens.refresh_token);
 
-    refreshTokenStore = tokens.refresh_token;
+    refreshTokenStore[userId] = tokens.refresh_token;
     accessTokenCache.set(userId, tokens.access_token, Math.round(tokens.expires_in * 0.75));
 
     console.log('       > Received an access token and refresh token');
