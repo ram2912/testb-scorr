@@ -377,8 +377,8 @@ const isAccessTokenExpired = async (accessToken) => {
     
     console.log('Response body:', response);
     
-    
-    const expiresIn = response.expires_in;
+    const responseBody = JSON.parse(response);
+    const expiresIn = responseBody.expires_in;
     
 
     console.log('Expires in:', expiresIn);
