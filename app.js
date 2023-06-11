@@ -375,12 +375,13 @@ const isAccessTokenExpired = async (accessToken) => {
     // Make an API call to check the access token's expiration status
     const response = await request.get(`https://api.hubapi.com/oauth/v1/access-tokens/${accessToken}`);
     
-    console.log('Response body:', response.body);
+    console.log('Response body:', response);
     
+    const tokenInfo = response;
+    const expiresIn = tokenInfo.expires_in;
     
-    const expiresIn = response.expires_in;
 
-    console.log('Expires in:', expiresIn);
+    console.log('Expires in:', tokenInfo.expires_in);
     
     
     // Get the expiration timestamp from the token info
