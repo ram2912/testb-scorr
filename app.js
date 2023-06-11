@@ -381,7 +381,7 @@ const isAccessTokenExpired = async (accessToken) => {
     const expiresIn = tokenInfo.expires_in;
     
 
-    console.log('Expires in:', tokenInfo.expires_in);
+    console.log('Expires in:', expiresIn);
     
     
     // Get the expiration timestamp from the token info
