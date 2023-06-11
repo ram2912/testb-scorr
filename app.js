@@ -371,6 +371,7 @@ const getAccessToken = async () => {
 
 const isAccessTokenExpired = async (accessToken) => {
   try {
+    console.log(accessToken);
     // Make an API call to check the access token's expiration status
     const response = await request.get(`https://api.hubapi.com/oauth/v1/access-tokens/${accessToken}`);
     const responseBody = response.body;
