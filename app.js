@@ -261,12 +261,15 @@ app.get('/oauth-callback', async (req, res) => {
 
 const exchangeForTokens = async (exchangeProof,userId) => {
   try {
+    console.log('       > Exchanging proof for access token');
+    console.log('       > Request data:', exchangeProof);
     const responseBody = await request.post('https://api.hubapi.com/oauth/v1/token', {
       form: exchangeProof
     });
     // Usually, this token data should be persisted in a database and associated with
     // a user identity.
     const tokens = JSON.parse(responseBody);
+    console.log(tokens);
     refreshTokenStore[userId] = tokens.refresh_token;
     accessTokenCache.set(userId, tokens.access_token, Math.round(tokens.expires_in * 0.75));
 
