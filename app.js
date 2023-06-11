@@ -400,7 +400,7 @@ const isAccessTokenExpired = async (accessToken) => {
     return expirationTimestamp <= currentTime;
   } catch (error) {
     console.error('Error checking access token expiration:', error);
-    return false; // Treat as non-expired if an error occurs
+    return true; // Treat as non-expired if an error occurs
   }
 };
 
