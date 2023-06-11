@@ -246,7 +246,7 @@ app.get('/oauth-callback', async (req, res) => {
 
     console.log(tokens);
 
-    await storeAccessToken(tokens.access_token, tokens.refresh_token);
+    
 
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
@@ -274,6 +274,9 @@ const exchangeForTokens = async (exchangeProof,userId) => {
     accessTokenCache.set(userId, tokens.access_token, Math.round(tokens.expires_in * 0.75));
 
     console.log('       > Received an access token and refresh token');
+
+    await storeAccessToken(tokens.access_token, tokens.refresh_token);
+    
     return tokens;
   } catch (e) {
     console.error(`       > Error exchanging ${exchangeProof.grant_type} for access token`);
@@ -336,7 +339,6 @@ const refreshAccessToken = async () => {
 
   refreshToken = await getRefreshTokenFromStorage();
   console.log(refreshToken);
-  
 
   const refreshTokenProof = {
     grant_type: 'refresh_token',
