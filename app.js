@@ -332,6 +332,9 @@ const getRefreshTokenFromStorage = async () => {
 const refreshAccessToken = async () => {
 
   refreshToken = await getRefreshTokenFromStorage();
+  console.log(refreshToken);
+  
+
   const refreshTokenProof = {
     grant_type: 'refresh_token',
     client_id: CLIENT_ID,
@@ -339,13 +342,13 @@ const refreshAccessToken = async () => {
     redirect_uri: REDIRECT_URI,
     refresh_token: refreshToken
   };
-  const tokens = await exchangeForTokens(refreshTokenProof);
+  const tokens = await exchangeForTokens(refreshTokenProof, userId);
   if (tokens.message) {
-    // Handle the error case
+    console.error('Error refreshing access token:', tokens.message);
   } else {
     const { access_token, refresh_token } = tokens;
-
     await storeAccessToken(access_token, refresh_token);
+    console.log('Access token refreshed successfully');
   }
 };
 
@@ -356,15 +359,20 @@ const getAccessToken = async () => {
     accessToken = await getAccessTokenFromStorage();
 
     // Store the retrieved access token in the cache
-    accessTokenCache.set('access_token', accessToken);
+    
+    console.log('Got access token from storage');
   }
 
   // Check if the access token is expired
   const isExpired = await isAccessTokenExpired(accessToken);
   if (isExpired) {
+    console.log('Access token is expired');
     await refreshAccessToken();
-    accessToken = accessTokenCache.get('access_token');
+    accessToken = await getAccessTokenFromStorage();
+    
+    console.log('Access token refreshed, new access token:', accessToken);
   }
+  accessTokenCache.set('access_token', accessToken);
 
   return accessToken;
 };
@@ -405,6 +413,7 @@ const task = setInterval(checkAccessTokenExpiration, interval);
 async function checkAccessTokenExpiration() {
   const accessToken = await getAccessToken();
   await isAccessTokenExpired(accessToken);
+  
 }
 
 // Function to stop the periodic task (if needed)
