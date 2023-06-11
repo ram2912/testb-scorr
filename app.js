@@ -296,7 +296,7 @@ const getAccessTokenFromStorage = async () => {
   try {
     const result = await pool.query(query);
     if (result.rows.length > 0) {
-      const accessToken = result.rows[0].token;
+      const accessToken = result.rows[0].access_token; // Corrected column name
       console.log('Access token retrieved successfully');
       return accessToken;
     } else {
@@ -308,6 +308,7 @@ const getAccessTokenFromStorage = async () => {
     return null;
   }
 };
+
 
 const getRefreshTokenFromStorage = async () => {
   const query = 'SELECT refresh_token FROM access_tokens ORDER BY id DESC LIMIT 1';
