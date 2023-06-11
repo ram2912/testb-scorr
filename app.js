@@ -316,7 +316,7 @@ const getRefreshTokenFromStorage = async () => {
   try {
     const result = await pool.query(query);
     if (result.rows.length > 0) {
-      const refreshToken = result.rows[0].token;
+      const refreshToken = result.rows[0].refresh_token;
       console.log('Refresh token retrieved successfully');
       return refreshToken;
     } else {
