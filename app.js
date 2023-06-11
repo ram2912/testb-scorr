@@ -345,7 +345,7 @@ const refreshAccessToken = async () => {
   } else {
     const { access_token, refresh_token } = tokens;
 
-    storeAccessToken(access_token, refresh_token);
+    await storeAccessToken(access_token, refresh_token);
   }
 };
 
@@ -396,6 +396,21 @@ const isAccessTokenExpired = async (accessToken) => {
   }
 };
 
+const interval = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+// Start the periodic task
+const task = setInterval(checkAccessTokenExpiration, interval);
+
+// Function to check access token expiration and refresh if necessary
+async function checkAccessTokenExpiration() {
+  const accessToken = await getAccessToken();
+  await isAccessTokenExpired(accessToken);
+}
+
+// Function to stop the periodic task (if needed)
+function stopTask() {
+  clearInterval(task);
+}
 
 
 
