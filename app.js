@@ -378,11 +378,14 @@ const isAccessTokenExpired = async (accessToken) => {
     console.log('Response body:', response);
     
     const tokenInfo = JSON.parse(response.body);
+    const expiresIn = tokenInfo.expires_in;
+
+    console.log('Expires in:', expiresIn);
     
     
     // Get the expiration timestamp from the token info
     const currentTime = Math.floor(Date.now() / 1000); // Convert to seconds
-    const expirationTimestamp = tokenInfo.expires_in + currentTime;
+    const expirationTimestamp = expiresIn + currentTime;
     
     // Compare the expiration timestamp with the current time
     return expirationTimestamp <= currentTime;
