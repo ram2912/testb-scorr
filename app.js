@@ -624,7 +624,7 @@ const displayContacts = (res, contacts) => {
 
 app.get('/', async (req, res) => {
   res.setHeader('Content-Type', 'text/html');
-  res.write(`<h2>HubSpot OAuth 2.0 Quickstart App</h2>`);
+  res.write(`<h2>Install SCORR APP</h2>`);
 
   if (isAuthorized(req.sessionID)) {
     const accessToken = await getAccessToken(req.sessionID);
