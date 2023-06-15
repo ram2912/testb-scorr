@@ -12,6 +12,8 @@ const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require("openai");
 
+const environment = process.env.NODE_ENV || 'development';
+const environmentConfig = config[environment];
 
 app.use(cors({
   origin: ['https://www.scorr-app.eu','http://localhost:3000', 'https://test.scorr-app.eu'],
@@ -20,7 +22,7 @@ app.use(cors({
 
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: environmentConfig.databaseUrl,
     ssl: {
       rejectUnauthorized: false // This is needed for local development, remove it for production
     }
@@ -143,8 +145,8 @@ const pool = new Pool({
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
 
-const CLIENT_ID = '145b0563-58c0-4d84-b557-6d0c5c2afcbd';
-const CLIENT_SECRET = 'd5006e11-6a22-46e8-b3f9-92c74fa7b929';
+const CLIENT_ID = environmentConfig.clientID;
+const CLIENT_SECRET = environmentConfig.clientSecret;
 
 PORT = process.env.PORT || 5001;
 
@@ -157,7 +159,7 @@ if (process.env.SCOPE) {
 }
 
 // On successful install, users will be redirected to /oauth-callback
-const REDIRECT_URI = `https://testback.scorr-app.eu/oauth-callback`;
+const REDIRECT_URI = environmentConfig.redirectUri;
 
 //===========================================================================//
 
@@ -219,6 +221,9 @@ app.get('/install', (req, res) => {
 // Step 3
 // Receive the authorization code from the OAuth 2.0 Server,
 // and process it based on the query parameters that are passed
+
+const frontRedirect = environmentConfig.frontRedirect;
+
 app.get('/oauth-callback', async (req, res) => {
   console.log('===> Step 3: Handling the request sent by the server');
 
@@ -248,7 +253,7 @@ app.get('/oauth-callback', async (req, res) => {
     // Once the tokens have been retrieved, use them to make a query
     // to the HubSpot API
     
-    res.redirect(`https://test.scorr-app.eu/funnel`);
+    res.redirect(frontRedirect);
   }
 });
 
