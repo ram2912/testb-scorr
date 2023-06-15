@@ -11,6 +11,7 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require("openai");
+const config = require('./config-test');
 
 const environment = process.env.NODE_ENV || 'development';
 const environmentConfig = config[environment];
