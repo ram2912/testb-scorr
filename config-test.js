@@ -8,7 +8,7 @@ module.exports = {
     scopes: process.env.SCOPE || 'crm.objects.deals.read',
     corsOrigin: ['https://www.scorr-app.eu', 'https://test.scorr-app.eu'],
     accessTokenCacheExpiry: Math.round((60 * 60) * 0.75),
-    frontRedirect: 'https://test.scorr-app.eu/funnel' // 45 minutes (in seconds)
+    frontRedirect: 'https://www.scorr-app.eu/funnel' // 45 minutes (in seconds)
   },
   production: {
     port: process.env.PORT || 5001,
@@ -19,7 +19,7 @@ module.exports = {
     scopes: process.env.SCOPE || 'crm.objects.deals.read',
     corsOrigin: ['https://www.scorr-app.eu', 'https://test.scorr-app.eu'],
     accessTokenCacheExpiry: Math.round((60 * 60) * 0.75),
-    frontRedirect: 'https://www.scorr-app.eu/funnel' 
+    frontRedirect: 'https://test.scorr-app.eu/funnel' 
   },
 };
 
