@@ -770,35 +770,36 @@ app.post('/webhook', async (req, res) => {
 
     const fullFunnelStages = {};
 
-    if (pipelineIds.lead_pipeline_id && pipelineStages[0]?.length > 0) {
-      fullFunnelStages.leadPipelineStages = pipelineStages[0].map((stage) => ({
-        id: stage.id,
-        name: stage.label,
-      }));
-    }
+if (pipelineIds.lead_pipeline_id && pipelineStages[0]?.length > 0) {
+  fullFunnelStages.leadPipelineStages = pipelineStages[0].map((stage) => ({
+    id: stage.id,
+    name: stage.label,
+  }));
+}
 
-    if (pipelineIds.bdr_pipeline_id && pipelineStages[1]?.length > 0) {
-      fullFunnelStages.bdrPipelineStages = pipelineStages[1].map((stage) => ({
-        id: stage.id,
-        name: stage.label,
-      }));
-    }
+if (pipelineIds.bdr_pipeline_id && pipelineStages[1]?.length > 0) {
+  fullFunnelStages.bdrPipelineStages = pipelineStages[1].map((stage) => ({
+    id: stage.id,
+    name: stage.label,
+  }));
+}
 
-    if (pipelineIds.sales_pipeline_id && pipelineStages[2]?.length > 0) {
-      fullFunnelStages.salesPipelineStages = pipelineStages[2].map((stage) => ({
-        id: stage.id,
-        name: stage.label,
-      }));
-    }
+if (pipelineIds.sales_pipeline_id && pipelineStages[2]?.length > 0) {
+  fullFunnelStages.salesPipelineStages = pipelineStages[2].map((stage) => ({
+    id: stage.id,
+    name: stage.label,
+  }));
+}
 
-    funnelStages = Object.values(fullFunnelStages).flat().slice(0, -1);
-    
+const funnelStages = Object.values(fullFunnelStages)
+  .reduce((stages, pipelineStages) => stages.concat(pipelineStages), [])
+  .slice(0, -1);
 
-      res.json({
-        fullFunnelStages,
-      });
-
-      console.log(funnelStages);
+res.json({
+  fullFunnelStages,
+});
+ console.log(fullFunnelStages);
+console.log(funnelStages);
 
     } catch (error) {
       console.error('Error retrieving pipelines:', error);
