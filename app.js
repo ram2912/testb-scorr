@@ -763,10 +763,14 @@ app.get('/pipelines-stages', async (req, res) => {
       pipelinePromises.push(hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id));
     }
 
+    console.log('Pipeline Promise: ',pipelinePromises);
+
     const pipelineStagesResponse = await Promise.all(pipelinePromises);
+    console.log('pipelineStagesResponse: ',pipelineStagesResponse);
+
     const pipelineStages = pipelineStagesResponse.map((response) => response.results);
 
-    console.log(pipelineStages);
+    console.log('Pipeline Stages: ', pipelineStages);
 
     const funnelStages = pipelineStages.map((stage) => ({
       id: stage.id,
@@ -777,7 +781,7 @@ app.get('/pipelines-stages', async (req, res) => {
       funnelStages,
     });
 
-    console.log(funnelStages);
+    console.log('FunnelStages: ',funnelStages);
 
 
   } catch (error) {
