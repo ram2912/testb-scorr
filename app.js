@@ -732,24 +732,24 @@ app.post('/webhook', async (req, res) => {
 
   let funnelStages = [];
 
-  app.get('/pipelines-stages', async (req, res) => {
-    try {
-      const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
-      const accessToken = await accessTokenPromise;  // Get the access token dynamically
-      console.log(accessToken);
-      const hubspotClient = new hubspot.Client({ accessToken });
-      const objectType = "deals";
+app.get('/pipelines-stages', async (req, res) => {
+  try {
+    const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
+    const accessToken = await accessTokenPromise;  // Get the access token dynamically
+    console.log(accessToken);
+    const hubspotClient = new hubspot.Client({ accessToken });
+    const objectType = "deals";
 
-      const { funnelName } = req.query;
+    const { funnelName } = req.query;
 
-      const query = 'SELECT lead_pipeline_id, bdr_pipeline_id, sales_pipeline_id FROM pipelines WHERE funnel_name = $1';
-      const result = await pool.query(query, [funnelName]);
-      const pipelineIds = result.rows[0];
-      console.log(pipelineIds.lead_pipeline_id);
-      console.log(pipelineIds.bdr_pipeline_id);
-      console.log(pipelineIds.sales_pipeline_id);
+    const query = 'SELECT lead_pipeline_id, bdr_pipeline_id, sales_pipeline_id FROM pipelines WHERE funnel_name = $1';
+    const result = await pool.query(query, [funnelName]);
+    const pipelineIds = result.rows[0];
+    console.log(pipelineIds.lead_pipeline_id);
+    console.log(pipelineIds.bdr_pipeline_id);
+    console.log(pipelineIds.sales_pipeline_id);
 
-      const pipelinePromises = [];
+    const pipelinePromises = [];
 
     if (pipelineIds.lead_pipeline_id) {
       pipelinePromises.push(hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.lead_pipeline_id));
@@ -768,47 +768,24 @@ app.post('/webhook', async (req, res) => {
 
     console.log(pipelineStages);
 
-    const fullFunnelStages = {};
+    const funnelStages = pipelineStages.map((stage) => ({
+      id: stage.id,
+      name: stage.label,
+    }));
 
-if (pipelineIds.lead_pipeline_id && pipelineStages[0]?.length > 0) {
-  fullFunnelStages.leadPipelineStages = pipelineStages[0].map((stage) => ({
-    id: stage.id,
-    name: stage.label,
-  }));
-}
+    res.json({
+      funnelStages,
+    });
 
-if (pipelineIds.bdr_pipeline_id && pipelineStages[1]?.length > 0) {
-  fullFunnelStages.bdrPipelineStages = pipelineStages[1].map((stage) => ({
-    id: stage.id,
-    name: stage.label,
-  }));
-}
+    console.log(funnelStages);
 
-if (pipelineIds.sales_pipeline_id && pipelineStages[2]?.length > 0) {
-  fullFunnelStages.salesPipelineStages = pipelineStages[2].map((stage) => ({
-    id: stage.id,
-    name: stage.label,
-  }));
-}
 
-const funnelStages = Object.values(fullFunnelStages)
-  .filter((stages) => stages.length > 0)
-  .reduce((result, stages) => [...result, ...stages], []);
-
-res.json({
-  fullFunnelStages,
-  funnelStages,
+  } catch (error) {
+    console.error('Error retrieving pipelines:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
-console.log(fullFunnelStages);
-console.log(funnelStages);
-
-
-    } catch (error) {
-      console.error('Error retrieving pipelines:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
 
   
   async function getDistinctFunnelNames() {
