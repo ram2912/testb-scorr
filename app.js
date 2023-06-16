@@ -773,7 +773,7 @@ app.get('/pipelines-stages', async (req, res) => {
 
     console.log('Pipeline Stages: ', pipelineStages);
 
-    const funnelStages = pipelineStages.map((stage) => ({
+   funnelStages = pipelineStages.map((stage) => ({
       id: stage.id,
       name: stage.label,
     }));
