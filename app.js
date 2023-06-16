@@ -957,6 +957,7 @@ app.get('/pipelines-stages', async (req, res) => {
 
   async function calculateStageConversionRates(funnelStages) {
     try {
+      console.log('Funnel stages for cvr:', funnelStages)
       const conversionRates = [];
   
       for (let i = 0; i < funnelStages.length - 1; i++) {
@@ -991,6 +992,8 @@ app.get('/pipelines-stages', async (req, res) => {
           },
           conversionRate: conversionRate > 100 ? "Invalid data" : conversionRate.toFixed(0),
         };
+
+        console.log('Stage Conversion Rate: ',stageConversionRate);
   
         conversionRates.push(stageConversionRate);
       }
