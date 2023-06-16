@@ -752,35 +752,41 @@ app.get('/pipelines-stages', async (req, res) => {
     const pipelinePromises = [];
 
     if (pipelineIds.lead_pipeline_id) {
-      pipelinePromises.push(hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.lead_pipeline_id));
+      const leadPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.lead_pipeline_id);
+      const leadPipelineStagesWithoutLast = leadPipelineStages.results.slice(0, -1);
+      pipelinePromises.push(leadPipelineStagesWithoutLast);
     }
-
+  
     if (pipelineIds.bdr_pipeline_id) {
-      pipelinePromises.push(hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.bdr_pipeline_id));
+      const bdrPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.bdr_pipeline_id);
+      const bdrPipelineStagesWithoutLast = bdrPipelineStages.results.slice(0, -1);
+      pipelinePromises.push(bdrPipelineStagesWithoutLast);
     }
-
+  
     if (pipelineIds.sales_pipeline_id) {
-      pipelinePromises.push(hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id));
+      const salesPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id);
+      const salesPipelineStagesWithoutLast = salesPipelineStages.results.slice(0, -1);
+      pipelinePromises.push(salesPipelineStagesWithoutLast);
     }
 
     console.log('Pipeline Promise: ',pipelinePromises);
 
     const pipelineStagesResponse = await Promise.all(pipelinePromises);
-  console.log('pipelineStagesResponse: ', pipelineStagesResponse);
+    console.log('pipelineStagesResponse: ',pipelineStagesResponse);
 
-  const pipelineStages = pipelineStagesResponse.flatMap((response) => response.results);
+    const pipelineStages = pipelineStagesResponse.flatMap((response) => response.results);
 
-  console.log('Pipeline Stages: ', pipelineStages);
 
-  const filteredPipelineStages = pipelineStages.map((stages) => stages.slice(0, -1));
+    console.log('Pipeline Stages: ', pipelineStages);
 
-  funnelStages = filteredPipelineStages.flatMap((stages) =>
-    stages.map((stage) => ({
+   funnelStages = pipelineStages.map((stage) => ({
       id: stage.id,
       name: stage.label,
-    }))
-  );
+    }));
 
+    res.json({
+      funnelStages,
+    });
 
     console.log('FunnelStages: ',funnelStages);
 
