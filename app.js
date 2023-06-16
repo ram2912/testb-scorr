@@ -749,50 +749,49 @@ app.post('/webhook', async (req, res) => {
       console.log(pipelineIds.bdr_pipeline_id);
       console.log(pipelineIds.sales_pipeline_id);
 
-      const leadPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.lead_pipeline_id);
-      const bdrPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.bdr_pipeline_id);
-      const salesPipelineStages = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id);
+      const pipelinePromises = [];
 
-      console.log(leadPipelineStages);
-      console.log(bdrPipelineStages);
-      console.log(salesPipelineStages);
+    if (pipelineIds.lead_pipeline_id) {
+      pipelinePromises.push(hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.lead_pipeline_id));
+    }
 
-      
-      const pipelineStagesResponse = await Promise.all([
-        leadPipelineStages,
-        bdrPipelineStages,
-        salesPipelineStages,
-      ]);
+    if (pipelineIds.bdr_pipeline_id) {
+      pipelinePromises.push(hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.bdr_pipeline_id));
+    }
 
-      console.log(pipelineStagesResponse);
+    if (pipelineIds.sales_pipeline_id) {
+      pipelinePromises.push(hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineIds.sales_pipeline_id));
+    }
 
-      const leadStages = pipelineStagesResponse[0].results.map((stage) => ({
+    const pipelineStagesResponse = await Promise.all(pipelinePromises);
+    const pipelineStages = pipelineStagesResponse.map((response) => response.results);
+
+    console.log(pipelineStages);
+
+    const fullFunnelStages = {};
+
+    if (pipelineIds.lead_pipeline_id && pipelineStages[0]?.length > 0) {
+      fullFunnelStages.leadPipelineStages = pipelineStages[0].map((stage) => ({
         id: stage.id,
         name: stage.label,
       }));
-      const bdrStages = pipelineStagesResponse[1].results.map((stage) => ({
+    }
+
+    if (pipelineIds.bdr_pipeline_id && pipelineStages[1]?.length > 0) {
+      fullFunnelStages.bdrPipelineStages = pipelineStages[1].map((stage) => ({
         id: stage.id,
         name: stage.label,
       }));
-      const salesStages = pipelineStagesResponse[2].results.map((stage) => ({
+    }
+
+    if (pipelineIds.sales_pipeline_id && pipelineStages[2]?.length > 0) {
+      fullFunnelStages.salesPipelineStages = pipelineStages[2].map((stage) => ({
         id: stage.id,
         name: stage.label,
       }));
+    }
 
-    const fullFunnelStages = {
-      salesPipelineStages: salesStages,
-      bdrPipelineStages: bdrStages,
-      leadPipelineStages: leadStages,
-     
-    };
-
-
-
-    funnelStages = [
-      ...leadStages.slice(0, -1),
-      ...bdrStages.slice(0, -1),
-      ...salesStages.slice(0, -1),
-    ];
+    funnelStages = Object.values(fullFunnelStages).flat().slice(0, -1);
     
 
       res.json({
