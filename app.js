@@ -774,7 +774,7 @@ app.get('/pipelines-stages', async (req, res) => {
     const pipelineStagesResponse = await Promise.all(pipelinePromises);
     console.log('pipelineStagesResponse: ',pipelineStagesResponse);
 
-    const pipelineStages = pipelineStagesResponse.flatMap((response) => response.results);
+    const pipelineStages = pipelineStagesResponse.flat();
 
 
     console.log('Pipeline Stages: ', pipelineStages);
