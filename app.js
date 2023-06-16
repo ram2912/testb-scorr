@@ -766,21 +766,21 @@ app.get('/pipelines-stages', async (req, res) => {
     console.log('Pipeline Promise: ',pipelinePromises);
 
     const pipelineStagesResponse = await Promise.all(pipelinePromises);
-    console.log('pipelineStagesResponse: ',pipelineStagesResponse);
+  console.log('pipelineStagesResponse: ', pipelineStagesResponse);
 
-    const pipelineStages = pipelineStagesResponse.flatMap((response) => response.results);
+  const pipelineStages = pipelineStagesResponse.flatMap((response) => response.results);
 
+  console.log('Pipeline Stages: ', pipelineStages);
 
-    console.log('Pipeline Stages: ', pipelineStages);
+  const filteredPipelineStages = pipelineStages.map((stages) => stages.slice(0, -1));
 
-   funnelStages = pipelineStages.map((stage) => ({
+  funnelStages = filteredPipelineStages.flatMap((stages) =>
+    stages.map((stage) => ({
       id: stage.id,
       name: stage.label,
-    }));
+    }))
+  );
 
-    res.json({
-      funnelStages,
-    });
 
     console.log('FunnelStages: ',funnelStages);
 
