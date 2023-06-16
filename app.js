@@ -1016,7 +1016,7 @@ app.get('/pipelines-stages', async (req, res) => {
   
   app.get('/conversion-rate', async (req, res) => {
     try {
-      console.log('Funnel stages for cvr in endpoint:', funnelStages)
+      console.log('Funnel stages for cvr in:', funnelStages)
 
       const conversionRates = await calculateStageConversionRates(funnelStages);
       res.json({ conversionRates });
