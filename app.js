@@ -792,14 +792,17 @@ if (pipelineIds.sales_pipeline_id && pipelineStages[2]?.length > 0) {
 }
 
 const funnelStages = Object.values(fullFunnelStages)
-  .reduce((stages, pipelineStages) => stages.concat(pipelineStages), [])
-  .slice(0, -1);
+  .filter((stages) => stages.length > 0)
+  .reduce((result, stages) => [...result, ...stages], []);
 
 res.json({
   fullFunnelStages,
+  funnelStages,
 });
- console.log(fullFunnelStages);
+
+console.log(fullFunnelStages);
 console.log(funnelStages);
+
 
     } catch (error) {
       console.error('Error retrieving pipelines:', error);
