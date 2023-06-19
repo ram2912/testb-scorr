@@ -697,7 +697,7 @@ app.post('/webhook', async (req, res) => {
   const getPipelines = async (funnelName) => {
     
     try{
-    const query = 'SELECT bdr_pipeline_name, sales_pipeline_name FROM pipelines WHERE funnel_name = $1';
+    const query = 'SELECT lead_pipeline_name, bdr_pipeline_name, sales_pipeline_name FROM pipelines WHERE funnel_name = $1';
     const result = await pool.query(query, [funnelName]);
     console.log(result.rows[0]);
     const pipelineNames = result.rows[0];
