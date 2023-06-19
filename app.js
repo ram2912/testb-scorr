@@ -694,6 +694,33 @@ app.post('/webhook', async (req, res) => {
     }
   });
 
+  const getPipelines = async (funnelName) => {
+    console.log('');
+    try{
+    const query = 'SELECT lead_pipeline_name, bdr_pipeline_name, sales_pipeline_name FROM pipelines WHERE funnel_name = $1';
+    const result = await pool.query(query, [funnelName]);
+    const pipelineNames = result.rows[0];
+    console.log(pipelineNames.lead_pipeline_name);
+    console.log(pipelineNames.bdr_pipeline_name);
+    console.log(pipelineNames.sales_pipeline_name);
+    return pipelineNames;
+    }catch(error){
+      console.error('Error fetching pipeline names:', error);
+      return null;
+    }
+  };
+
+  app.get('/pipelines-names', async (req, res) => {
+    try {
+      const { funnelName } = req.query;
+      const pipelineNames = await getPipelines(funnelName);
+      res.json(pipelineNames);
+    } catch (error) {
+      console.error('Error fetching pipeline names:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
   app.get('/deal-properties', async (req, res) => {
     try {
       const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
