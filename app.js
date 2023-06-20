@@ -808,7 +808,7 @@ app.post('/webhook', async (req, res) => {
       const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
       const accessToken = await accessTokenPromise;  // Get the access token dynamically
       console.log(accessToken);// Get the access token dynamically
-      
+
     const { userId, userEmail, hubDomain } = await getUserId(accessToken);
     console.log(req.body);
     console.log('Email: ', userEmail);
@@ -895,13 +895,14 @@ app.get('/pipelines-stages', async (req, res) => {
 
 
   
-  async function getDistinctFunnelNames() {
+  async function getDistinctFunnelNames(userId) {
     try {
       const query = `
         SELECT DISTINCT funnel_name
         FROM pipelines
+        WHERE user_id = $1
       `;
-      const result = await pool.query(query);
+      const result = await pool.query(query, [userId]);
       const funnelNames = result.rows.map((row) => row.funnel_name);
   
       return funnelNames;
@@ -913,7 +914,20 @@ app.get('/pipelines-stages', async (req, res) => {
   
   app.get('/funnels', async (req, res) => {
     try {
-      const funnelNames = await getDistinctFunnelNames();
+      const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
+      const accessToken = await accessTokenPromise;  // Get the access token dynamically
+      console.log(accessToken);
+
+      const { userId, userEmail, hubDomain } = await getUserId(accessToken);
+    console.log(req.body);
+    console.log('Email: ', userEmail);
+    console.log('Hub Domain: ', hubDomain);
+    console.log('User ID: ', userId);
+
+    const id = await getUserIdByEmail(userEmail, hubDomain);
+
+      
+      const funnelNames = await getDistinctFunnelNames(id);
       res.json(funnelNames);
     } catch (error) {
       console.error('Error fetching funnel names:', error);
