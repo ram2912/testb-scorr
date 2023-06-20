@@ -395,12 +395,12 @@ const getUserId = async (accessToken) => {
 
     const responseBody = JSON.parse(response);
     const userId = responseBody.user_id;
-    const user = responseBody.user;
+    const userEmail = responseBody.user;
 
     console.log('User ID:', userId);
-    console.log('User:', user);
+    console.log('User:', userEmail);
 
-    await storeUsers(userId, user);
+    await storeUsers(userId, userEmail);
     
     return userId;
   } catch (error) {
@@ -408,6 +408,19 @@ const getUserId = async (accessToken) => {
     return null;
   }
 };
+
+const getUserIdByEmail = async (email) => {
+  try {
+    const query = 'SELECT id FROM users WHERE user_email = $1';
+    const result = await pool.query(query, [email]);
+    const user = result.rows[0];
+    return user.id;
+  } catch (error) {
+    console.error('Error retrieving user ID:', error);
+    return null;
+  }
+};
+
 
 const isAccessTokenExpired = async (accessToken) => {
   try {
