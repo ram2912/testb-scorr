@@ -404,7 +404,7 @@ const getUserId = async (accessToken) => {
 
     await storeUsers(userId, userEmail, hubDomain);
     
-    return userId;
+    return { userId, userEmail, hubDomain };
   } catch (error) {
     console.error('Error accessing userId', error);
     return null;
@@ -803,18 +803,20 @@ app.post('/webhook', async (req, res) => {
       // Retrieve the properties for the specified dealID
 
   app.post('/store-pipelines', async (req, res) => {
-    const { funnelName, leadPipeline, bdrPipeline, salesPipeline} = req.body;
-    console.log(req.body);
+    const { funnelName, leadPipeline, bdrPipeline, salesPipeline, accessToken} = req.body; // Insert the pipeline data into the "pipelines" table in the database
+    try {
 
+    const { userId, userEmail, hubDomain } = await getUserId(accessToken);
+    console.log(req.body);
     console.log('Email: ', userEmail);
     console.log('Hub Domain: ', hubDomain);
+    console.log('User ID: ', userId);
 
-    const userId = await getUserIdByEmail(userEmail, hubDomain);
-  
-    // Insert the pipeline data into the "pipelines" table in the database
-    try {
+
+
+    const id = await getUserIdByEmail(userEmail, hubDomain);
       const query = 'INSERT INTO pipelines (lead_pipeline_id, lead_pipeline_name, bdr_pipeline_id, bdr_pipeline_name, sales_pipeline_id, sales_pipeline_name, funnel_name, user_Id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
-      await pool.query(query, [leadPipeline.id, leadPipeline.name, bdrPipeline.id, bdrPipeline.name, salesPipeline.id, salesPipeline.name, funnelName, userId ]);
+      await pool.query(query, [leadPipeline.id, leadPipeline.name, bdrPipeline.id, bdrPipeline.name, salesPipeline.id, salesPipeline.name, funnelName, id ]);
   
       res.sendStatus(200); // Send success status if the data is stored successfully
     } catch (error) {
