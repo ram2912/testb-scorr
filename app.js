@@ -803,8 +803,11 @@ app.post('/webhook', async (req, res) => {
       // Retrieve the properties for the specified dealID
 
   app.post('/store-pipelines', async (req, res) => {
-    const { funnelName, leadPipeline, bdrPipeline, salesPipeline, userEmail, hubDomain  } = req.body;
+    const { funnelName, leadPipeline, bdrPipeline, salesPipeline} = req.body;
     console.log(req.body);
+
+    console.log('Email: ', userEmail);
+    console.log('Hub Domain: ', hubDomain);
 
     const userId = await getUserIdByEmail(userEmail, hubDomain);
   
