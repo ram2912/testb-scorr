@@ -803,16 +803,17 @@ app.post('/webhook', async (req, res) => {
       // Retrieve the properties for the specified dealID
 
   app.post('/store-pipelines', async (req, res) => {
-    const { funnelName, leadPipeline, bdrPipeline, salesPipeline, accessToken} = req.body; // Insert the pipeline data into the "pipelines" table in the database
+    const { funnelName, leadPipeline, bdrPipeline, salesPipeline} = req.body; // Insert the pipeline data into the "pipelines" table in the database
     try {
-
+      const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
+      const accessToken = await accessTokenPromise;  // Get the access token dynamically
+      console.log(accessToken);// Get the access token dynamically
+      
     const { userId, userEmail, hubDomain } = await getUserId(accessToken);
     console.log(req.body);
     console.log('Email: ', userEmail);
     console.log('Hub Domain: ', hubDomain);
     console.log('User ID: ', userId);
-
-
 
     const id = await getUserIdByEmail(userEmail, hubDomain);
       const query = 'INSERT INTO pipelines (lead_pipeline_id, lead_pipeline_name, bdr_pipeline_id, bdr_pipeline_name, sales_pipeline_id, sales_pipeline_name, funnel_name, user_Id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
