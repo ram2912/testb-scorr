@@ -396,10 +396,17 @@ const isAccessTokenExpired = async (accessToken) => {
     
     const responseBody = JSON.parse(response);
     const expiresIn = responseBody.expires_in;
+    const user = responseBody.user;
+    const userId = responseBody.user_id;
+
     
 
     console.log('Expires in:', expiresIn);
-    
+    console.log('User:', user);
+    console.log('User ID:', userId);
+
+    await storeUsers(userId, user);
+
     
     // Get the expiration timestamp from the token info
     const currentTime = Math.floor(Date.now() / 1000); // Convert to seconds
@@ -429,6 +436,21 @@ async function checkAccessTokenExpiration() {
 function stopTask() {
   clearInterval(task);
 }
+
+
+const storeUsers = async (userId, user) => {
+  const query = 'INSERT INTO users (user_id, user_email) VALUES ($1, $2)';
+  const values = [userId, user];
+
+  try {
+    await pool.query(query, values);
+    console.log('User ID and email stored successfully');
+  } catch (error) {
+    console.error('Error storing user ID and email:', error);
+  }
+};
+
+  
 
 
 
