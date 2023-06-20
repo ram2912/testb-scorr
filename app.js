@@ -400,6 +400,7 @@ const getUserId = async (accessToken) => {
 
     console.log('User ID:', userId);
     console.log('User:', userEmail);
+    console.log('Hub Domain:', hubDomain);
 
     await storeUsers(userId, userEmail, hubDomain);
     
@@ -410,17 +411,18 @@ const getUserId = async (accessToken) => {
   }
 };
 
-const getUserIdByEmail = async (email) => {
+const getUserIdByEmail = async (email, hubDomain) => {
   try {
-    const query = 'SELECT id FROM users WHERE user_email = $1';
-    const result = await pool.query(query, [email]);
+    const query = 'SELECT id FROM users WHERE user_email = $1 AND hub_domain = $2';
+    const result = await pool.query(query, [email, hubDomain]);
     const user = result.rows[0];
-    return user.id;
+    return user ? user.id : null;
   } catch (error) {
     console.error('Error retrieving user ID:', error);
     return null;
   }
 };
+
 
 
 const isAccessTokenExpired = async (accessToken) => {
@@ -801,13 +803,15 @@ app.post('/webhook', async (req, res) => {
       // Retrieve the properties for the specified dealID
 
   app.post('/store-pipelines', async (req, res) => {
-    const { funnelName, leadPipeline, bdrPipeline, salesPipeline } = req.body;
+    const { funnelName, leadPipeline, bdrPipeline, salesPipeline, userEmail, hubDomain  } = req.body;
     console.log(req.body);
+
+    const userId = await getUserIdByEmail(userEmail, hubDomain);
   
     // Insert the pipeline data into the "pipelines" table in the database
     try {
-      const query = 'INSERT INTO pipelines (lead_pipeline_id, lead_pipeline_name, bdr_pipeline_id, bdr_pipeline_name, sales_pipeline_id, sales_pipeline_name, funnel_name) VALUES ($1, $2, $3, $4, $5, $6, $7)';
-      await pool.query(query, [leadPipeline.id, leadPipeline.name, bdrPipeline.id, bdrPipeline.name, salesPipeline.id, salesPipeline.name, funnelName ]);
+      const query = 'INSERT INTO pipelines (lead_pipeline_id, lead_pipeline_name, bdr_pipeline_id, bdr_pipeline_name, sales_pipeline_id, sales_pipeline_name, funnel_name, user_Id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
+      await pool.query(query, [leadPipeline.id, leadPipeline.name, bdrPipeline.id, bdrPipeline.name, salesPipeline.id, salesPipeline.name, funnelName, userId ]);
   
       res.sendStatus(200); // Send success status if the data is stored successfully
     } catch (error) {
