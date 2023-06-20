@@ -275,6 +275,7 @@ const exchangeForTokens = async (exchangeProof,userId) => {
     console.log(tokens);
 
     await storeAccessToken(tokens.access_token, tokens.refresh_token);
+    await getUserId(tokens.access_token);
 
     refreshTokenStore[userId] = tokens.refresh_token;
     accessTokenCache.set(userId, tokens.access_token, Math.round(tokens.expires_in * 0.75));
@@ -294,6 +295,7 @@ const storeAccessToken = async (accessToken, refreshToken) => {
 
   try {
     await pool.query(query, values);
+    
     console.log('Access token stored successfully');
   } catch (error) {
     console.error('Error storing access token:', error);
@@ -386,6 +388,27 @@ const getAccessToken = async () => {
   return accessToken;
 };
 
+const getUserId = async (accessToken) => {
+  try {
+    // Make an API call to check the access token's expiration status
+    const response = await request.get(`https://api.hubapi.com/oauth/v1/access-tokens/${accessToken}`);
+
+    const responseBody = JSON.parse(response);
+    const userId = responseBody.user_id;
+    const user = responseBody.user;
+
+    console.log('User ID:', userId);
+    console.log('User:', user);
+
+    await storeUsers(userId, user);
+    
+    return userId;
+  } catch (error) {
+    console.error('Error accessing userId', error);
+    return null;
+  }
+};
+
 const isAccessTokenExpired = async (accessToken) => {
   try {
     console.log(accessToken)
@@ -396,16 +419,7 @@ const isAccessTokenExpired = async (accessToken) => {
     
     const responseBody = JSON.parse(response);
     const expiresIn = responseBody.expires_in;
-    const user = responseBody.user;
-    const userId = responseBody.user_id;
 
-    
-
-    console.log('Expires in:', expiresIn);
-    console.log('User:', user);
-    console.log('User ID:', userId);
-
-    await storeUsers(userId, user);
 
     
     // Get the expiration timestamp from the token info
