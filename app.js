@@ -396,11 +396,12 @@ const getUserId = async (accessToken) => {
     const responseBody = JSON.parse(response);
     const userId = responseBody.user_id;
     const userEmail = responseBody.user;
+    const hubDomain = responseBody.hub_domain;
 
     console.log('User ID:', userId);
     console.log('User:', userEmail);
 
-    await storeUsers(userId, userEmail);
+    await storeUsers(userId, userEmail, hubDomain);
     
     return userId;
   } catch (error) {
@@ -465,13 +466,21 @@ function stopTask() {
 }
 
 
-const storeUsers = async (userId, user) => {
-  const query = 'INSERT INTO users (user_id, user_email) VALUES ($1, $2)';
-  const values = [userId, user];
+const storeUsers = async (userId, user, hubDomain) => {
+  const checkUserQuery = 'SELECT COUNT(*) FROM users WHERE hub_domain = $1';
+  const insertUserQuery = 'INSERT INTO users (user_id, user_email, hub_domain) VALUES ($1, $2, $3)';
+  const values = [userId, user, hubDomain];
 
   try {
-    await pool.query(query, values);
-    console.log('User ID and email stored successfully');
+    const result = await pool.query(checkUserQuery, [hubDomain]);
+    const count = parseInt(result.rows[0].count);
+
+    if (count === 0) {
+      await pool.query(insertUserQuery, values);
+      console.log('User ID and email stored successfully');
+    } else {
+      console.log('User with the same hubDomain already exists. Skipping insertion.');
+    }
   } catch (error) {
     console.error('Error storing user ID and email:', error);
   }
