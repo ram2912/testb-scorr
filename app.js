@@ -469,24 +469,25 @@ function stopTask() {
 
 
 const storeUsers = async (userId, user, hubDomain) => {
-  const checkUserQuery = 'SELECT COUNT(*) FROM users WHERE hub_domain = $1';
+  const checkUserQuery = 'SELECT COUNT(*) FROM users WHERE hub_domain = $1 AND user_email = $2';
   const insertUserQuery = 'INSERT INTO users (user_id, user_email, hub_domain) VALUES ($1, $2, $3)';
   const values = [userId, user, hubDomain];
 
   try {
-    const result = await pool.query(checkUserQuery, [hubDomain]);
+    const result = await pool.query(checkUserQuery, [hubDomain, user]);
     const count = parseInt(result.rows[0].count);
 
     if (count === 0) {
       await pool.query(insertUserQuery, values);
       console.log('User ID and email stored successfully');
     } else {
-      console.log('User with the same hubDomain already exists. Skipping insertion.');
+      console.log('User with the same hubDomain and user email already exists. Skipping insertion.');
     }
   } catch (error) {
     console.error('Error storing user ID and email:', error);
   }
 };
+
 
   
 
