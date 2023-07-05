@@ -15,9 +15,7 @@ const { Configuration, OpenAIApi } = require("openai");
 
 const router = express.Router();   
 
-const environment = process.env.NODE_ENV || 'development';
-const environmentConfig = require('../config-test')[environment];
-
+module.exports = (environmentConfig) => {
 
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
@@ -401,4 +399,24 @@ router.get('/', async (req, res) => {
     res.end();
   });
 
-module.exports = { getAccessTokenFromStorage, getAccessToken, getUserId, getUserIdByEmail, isAuthorized, router };
+
+
+return {
+    router,
+    getAccessToken,
+    getUserId,
+    getUserIdByEmail,
+    isAccessTokenExpired,
+    checkAccessTokenExpiration,
+    stopTask,
+    storeUsers,
+    isAuthorized,
+    exchangeForTokens,
+    getAccessTokenFromStorage,
+    getRefreshTokenFromStorage,
+    refreshAccessToken,
+    storeAccessToken,
+    refreshTokenStore,
+    accessTokenCache,
+};
+}
