@@ -86,15 +86,16 @@ const pool = new Pool({
           break; // No more pages, exit the loop
         }
       }
-
-
- 
-  
-      console.log(JSON.stringify(allDeals, null, 2));
   
       // Define the CSV writer and file path
+      const folderPath = '/Users/shrirampawar/Documents/SCORR-backend-test/test_extract';
+
+      // Define the file path
+      const filePath = path.join(folderPath, 'deals.csv');
+      
+      // Define the CSV writer
       const csvWriter = createCsvWriter({
-        path: path.join(__dirname, 'deals.csv'), // Set the file path according to your repository structure
+        path: filePath,
         header: Object.keys(allDeals[0]).map((key) => ({ id: key, title: key })),
       });
   
@@ -105,8 +106,9 @@ const pool = new Pool({
       } catch (error) {
         console.error('Error writing to CSV file:', error);
       }
-      
+
       res.json(allDeals);
+      console.log("deals extracted successfully");
     } catch (error) {
       console.error('Error retrieving deals:', error);
       res.status(500).json({ error: 'Internal Server Error' });
