@@ -1,5 +1,22 @@
 const express = require('express');
-const router = express.Router();
+require('dotenv').config();
+const app = express();
+const request = require('request-promise-native');
+const NodeCache = require('node-cache');
+const session = require('express-session');
+const hubspot = require('@hubspot/api-client');
+const cors = require('cors');
+const crypto = require('crypto');
+const { Pool } = require('pg');
+const { v4: uuidv4 } = require('uuid');
+const bodyParser = require('body-parser');
+const { Configuration, OpenAIApi } = require("openai");
+
+
+const router = express.Router();   
+
+const environment = process.env.NODE_ENV || 'development';
+const environmentConfig = require('../config-test')[environment];
 
 
 const refreshTokenStore = {};
@@ -365,4 +382,5 @@ router.get('/authorization-status', (req, res) => {
   }
 });
 
-module.exports = router;
+
+module.exports = (environmentConfig) => router;

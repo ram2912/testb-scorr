@@ -13,17 +13,22 @@ const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require("openai");
 const config = require('./config-test');
 
-const environment = process.env.NODE_ENV || 'development';
-const environmentConfig = config[environment];
+const PORT = process.env.PORT || 5001;
 
-const authRoutes = require('./routes/auth');
-const usersRoutes = require('./routes/users');
-const dealsRoutes = require('./routes/deals');
+
+
 
 app.use(cors({
   origin: ['https://www.scorr-app.eu','http://localhost:3000', 'https://test.scorr-app.eu'],
   credentials: true
 }));
+
+
+const environment = process.env.NODE_ENV || 'development';
+const environmentConfig = config[environment];
+
+const authRoutes = require('./routes/hs_auth')(environmentConfig);
+const dealsRoutes = require('./routes/deals');
 
 
 const pool = new Pool({
@@ -91,8 +96,9 @@ const pool = new Pool({
   // Call the function to set up the 'deals' table
   setupDealsTable();
 
-  app.use('/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/deals', dealsRoutes);
 
 
 app.listen(PORT, () => console.log(`Server started on Port ${PORT}`));
+

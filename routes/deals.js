@@ -1,4 +1,19 @@
 const express = require('express');
+require('dotenv').config();
+const app = express();
+const request = require('request-promise-native');
+const NodeCache = require('node-cache');
+const session = require('express-session');
+const hubspot = require('@hubspot/api-client');
+const cors = require('cors');
+const crypto = require('crypto');
+const { Pool } = require('pg');
+const { v4: uuidv4 } = require('uuid');
+const bodyParser = require('body-parser');
+const { Configuration, OpenAIApi } = require("openai");
+
+
+
 const router = express.Router();
 
 const getContacts = async (accessToken) => {
