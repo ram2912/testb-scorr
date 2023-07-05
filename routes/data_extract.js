@@ -88,10 +88,14 @@ const pool = new Pool({
       }
   
       console.log(JSON.stringify(allDeals, null, 2));
+
+      const folderPath = '/Users/shrirampawar/Documents/SCORR-backend-test/test_extract';
+      const filePath = path.join(folderPath, 'deals.csv');
+
   
       // Define the CSV writer and file path
       const csvWriter = createCsvWriter({
-        path: path.join(__dirname, 'deals.csv'), // Set the file path according to your repository structure
+        path: filePath, // Set the file path according to your repository structure
         header: Object.keys(allDeals[0]).map((key) => ({ id: key, title: key })),
       });
   
