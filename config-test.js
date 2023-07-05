@@ -4,7 +4,7 @@ module.exports = {
     databaseUrl: process.env.DATABASE_URL_DEV || 'postgres://cryrlxnrpclgau:7e3b9e9b0ce4910a6dfbbeeedb4994716581629132920e0ef972dafadd5ec868@ec2-54-155-46-64.eu-west-1.compute.amazonaws.com:5432/db9vfhgis0raq2',
     clientID: '145b0563-58c0-4d84-b557-6d0c5c2afcbd',
     clientSecret: 'd5006e11-6a22-46e8-b3f9-92c74fa7b929',
-    redirectUri: 'https://testback.scorr-app.eu/oauth-callback', // Development redirect URL
+    redirectUri: 'https://testback.scorr-app.eu/auth/oauth-callback', // Development redirect URL
     scopes: process.env.SCOPE || 'crm.objects.deals.read',
     corsOrigin: ['https://www.scorr-app.eu', 'https://test.scorr-app.eu'],
     accessTokenCacheExpiry: Math.round((60 * 60) * 0.75),
