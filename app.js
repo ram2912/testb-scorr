@@ -20,6 +20,7 @@ const environmentConfig = config[environment];
 
 
 const authRouter = require('./routes/hs_auth.js');
+const extractRouter = require('./routes/data_extract.js');
 
 app.use(cors({
   origin: ['https://www.scorr-app.eu','http://localhost:3000', 'https://test.scorr-app.eu'],
@@ -39,6 +40,7 @@ const pool = new Pool({
   app.use(bodyParser.json());
 
   app.use('/auth', authRouter.router);
+  app.use('/extract', extractRouter.router);
 
 
 
@@ -86,29 +88,6 @@ app.get('/pipelines2', async (req, res) => {
 });
 
 
-app.get('/pipelinestage', async (req, res) => {
-    try {
-      const accessToken = await getAccessToken();// Get the access token dynamically
-      const hubspotClient = new hubspot.Client({ accessToken });
-      const objectType = "deals";
-      const pipelineId = "27911521";
-  
-      const apiResponse = await hubspotClient.crm.pipelines.pipelineStagesApi.getAll(objectType, pipelineId);
-  
-      const pipelineStages = apiResponse.results.map((stage) => {
-        return {
-          label: stage.label,
-          displayOrder: stage.displayOrder
-        };
-      });
-  
-      res.json(pipelineStages);
-    } catch (e) {
-      e.message === 'HTTP request failed'
-        ? console.error(JSON.stringify(e.response, null, 2))
-        : console.error(e);
-    }
-  });
 
 
 
@@ -342,141 +321,6 @@ app.get('/pipelines-stages', async (req, res) => {
     }
   });
 
-  async function getSuggestedColumns() {
-    try {
-      const configuration = new Configuration({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-      const openai = new OpenAIApi(configuration);
-      const prompt1 = `You are a revenue operator and responsible for finding insights on how your stages are performing, especially what is the trend in conversion rate. You are using a stage conversion rate funnel table with columns source stage, target stage, and conversion rates. You need to add two more columns to get a better understanding of the data in the table. Select two columns which suit the requirements the best from this dataset:
-  
-      Conversion rate trend
-      Conversion rate change
-      Status
-      Reason
-      Average time in stage
-  
-      Give your response by stating the two best columns out of these five. Response format: "Answer: <column1> and <column2>" \n\nA:`;
-  
-      const response = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: prompt1,
-        max_tokens: 100,
-        temperature: 0.7,
-      });
-  
-      const suggestedColumnsText = response.data.choices[0].text;
-      const suggestedColumns = suggestedColumnsText
-        .replace('Answer:', '') // Remove the "Answer:" prefix
-        .trim() // Remove leading/trailing whitespaces
-        .split(' and ') // Split the columns by "and"
-        .map(column => column.trim()) // Trim each column
-        .map(column => column.replace(/[^\w\s]/g, '').trim());
-  
-      return suggestedColumns;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
-  
-  
-  
-
-  // Define the route to test the getSuggestedColumns function
-  app.get('/suggested-columns', async (req, res) => {
-    try {
-      const suggestedColumns = await getSuggestedColumns();
-      res.json({ suggestedColumns });
-    } catch (error) {
-      res.status(500).json({ error: 'An error occurred' });
-    }
-  });
-
-  async function generateConversionRateStatusAndReason(conversionRates) {
-    try {
-      const configuration = new Configuration({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-      const openai = new OpenAIApi(configuration);
-  
-      const results = [];
-  
-      const maxRetries = 5; // Maximum number of retries
-      const baseDelay = 30000; // Base delay in milliseconds
-  
-      for (const conversionRate of conversionRates) {
-        const { sourceStage, targetStage, conversionRate: rate } = conversionRate;
-  
-        const prompt = `Given the conversion rate ${rate} from stage "${sourceStage.name}" to stage "${targetStage.name}", determine the status and reason for this conversion rate.\n\nConversion rate: ${rate}\nSource Stage: "${sourceStage.name}"\nTarget Stage: "${targetStage.name}"\nStatus:`;
-  
-        let status = '';
-        let retries = 0;
-        let delay = baseDelay;
-  
-        while (!status && retries <= maxRetries) {
-          await new Promise((resolve) => setTimeout(resolve, delay));
-  
-          try {
-            const response = await openai.createCompletion({
-              model: 'text-davinci-003',
-              prompt: prompt,
-              max_tokens: 100,
-              temperature: 0.7,
-            });
-  
-            status = response.data.choices[0].text.trim();
-          } catch (error) {
-            if (error.response && error.response.status === 429) {
-              // Rate limit error, handle appropriately
-              console.log('Rate limit exceeded. Waiting before retrying...');
-              retries++;
-              delay *= 2; // Exponential backoff delay
-            } else {
-              // Other error occurred, handle appropriately
-              console.error(error);
-              throw error;
-            }
-          }
-        }
-  
-        // Generate reason based on the status and stages
-        let reason = '';
-        if (status === 'High') {
-          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is high due to effective strategies and optimized processes.`;
-        } else if (status === 'Low') {
-          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is low due to various factors such as poor user experience and inadequate marketing efforts.`;
-        } else {
-          reason = `The conversion rate from stage "${sourceStage.name}" to stage "${targetStage.name}" is at an average level with room for improvement.`;
-        }
-  
-        const result = {
-          ...conversionRate,
-          status: status,
-          reason: reason,
-        };
-  
-        results.push(result);
-      }
-  
-      return results;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  }
-  
-
-  app.get('/conversion-rate-status-and-reason', async (req, res) => {
-    try {
-      const conversionRates = await calculateStageConversionRates(funnelStages);
-      const conversionRatesWithStatusAndReason = await generateConversionRateStatusAndReason(conversionRates);
-      res.json({ conversionRatesWithStatusAndReason });
-    } catch (error) {
-      console.error('Error calculating conversion rates:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
 
   async function calculateStageConversionRates(funnelStages) {
     try {
