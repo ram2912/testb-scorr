@@ -29,7 +29,7 @@ PORT = process.env.PORT || 5001;
 
 // Scopes for this app will default to `crm.objects.contacts.read`
 // To request others, set the SCOPE environment variable instead
-const SCOPES = ['crm.objects.deals.read', 'sales-email-read'];
+const SCOPES = ['crm.objects.deals.read'];
 
 
 if (process.env.SCOPE) {
@@ -372,7 +372,7 @@ const isAuthorized = (userId) => {
   return refreshTokenStore[userId] ? true : false;
 };
 
-router.get('/authorization-status', (req, res) => {
+app.get('/authorization-status', (req, res) => {
   const isAuthorized = refreshTokenStore[req.sessionID] ? true : false;
 
   if (isAuthorized) {
@@ -381,6 +381,24 @@ router.get('/authorization-status', (req, res) => {
     res.status(401).json({ status: 'unauthorized' });
   }
 });
+//====================================================//
+//   Using an Access Token to Query the HubSpot API   //
+//====================================================//
 
+router.get('/', async (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.write(`<h2>Install SCORR APP</h2>`);
+  
+    if (isAuthorized(req.sessionID)) {
+      const accessToken = await getAccessToken(req.sessionID);
+      const contacts = await getContacts(accessToken);
+      res.write(`<h4>Access token: ${accessToken}</h4>`);
+      displayContacts(res, contacts);
+    } else {
+      res.write(`<a href="/install"><h3>Install the app</h3></a>`);
+    }
+    
+    res.end();
+  });
 
-module.exports = (environmentConfig) => router;
+module.exports = { getAccessTokenFromStorage, getAccessToken, getUserId, getUserIdByEmail, isAuthorized, router };
