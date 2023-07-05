@@ -14,6 +14,7 @@ const { Configuration, OpenAIApi } = require("openai");
 const { env } = require('process');
 const config = require('../config-test');
 const { getAccessTokenFromStorage } = require('../routes/hs_auth');
+const url = require('url');
 
 const router = express.Router();   
 
@@ -63,24 +64,21 @@ const pool = new Pool({
   
       const limit = 10;
       let after = undefined;
-      const properties = undefined;
-        const propertiesWithHistory = undefined;
-        const associations = undefined;
-        const archived = false;
-
       let allDeals = [];
   
       while (true) {
         const { results, paging } = await hubspotClient.crm.deals.basicApi.getPage(
-            limit, after, properties, propertiesWithHistory, associations, archived,
+          undefined,
+          limit,
+          after
         );
   
         allDeals.push(...results);
   
         if (paging.next) {
           // Extract the 'after' value from the next link to use in the next iteration
-          const nextLink = new URL(paging.next);
-          after = nextLink.searchParams.get('after');
+          const nextPageUrl = new URL(paging.next);
+          after = url.parse(nextPageUrl, true).query.after;
         } else {
           break; // No more pages, exit the loop
         }
