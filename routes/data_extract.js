@@ -15,6 +15,7 @@ const { env } = require('process');
 const config = require('../config-test');
 const { getAccessTokenFromStorage } = require('../routes/hs_auth');
 const url = require('url');
+const fs = require('fs');
 
 const router = express.Router();   
 
@@ -100,8 +101,10 @@ const pool = new Pool({
       });
   
       try {
-        // Write the deals to the CSV file
-        await csvWriter.writeRecords(allDeals);
+        const csvData = allDeals.map((deal) => Object.values(deal).join(','));
+        const csvContent = Object.keys(allDeals[0]).join(',') + '\n' + csvData.join('\n');
+        
+        fs.writeFileSync(filePath, csvContent);
         console.log('CSV file created successfully');
       } catch (error) {
         console.error('Error writing to CSV file:', error);
