@@ -376,7 +376,7 @@ const isAuthorized = (userId) => {
   return refreshTokenStore[userId] ? true : false;
 };
 
-app.get('auth/authorization-status', (req, res) => {
+app.get('/authorization-status', (req, res) => {
   const isAuthorized = refreshTokenStore[req.sessionID] ? true : false;
 
   if (isAuthorized) {
@@ -389,7 +389,7 @@ app.get('auth/authorization-status', (req, res) => {
 //   Using an Access Token to Query the HubSpot API   //
 //====================================================//
 
-router.get('auth/', async (req, res) => {
+router.get('/', async (req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.write(`<h2>Install SCORR APP</h2>`);
   
