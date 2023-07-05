@@ -20,6 +20,12 @@ const router = express.Router();
 const environment = process.env.NODE_ENV || 'development';
 const environmentConfig = config[environment];
 
+const pool = new Pool({
+    connectionString: environmentConfig.databaseUrl,
+    ssl: {
+      rejectUnauthorized: false // This is needed for local development, remove it for production
+    }
+  });
 
 
 
