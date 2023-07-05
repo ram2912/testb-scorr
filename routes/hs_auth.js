@@ -11,11 +11,17 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require("openai");
+const { env } = require('process');
+const config = require('../config-test');
 
 
 const router = express.Router();   
 
-module.exports = (environmentConfig) => {
+const environment = process.env.NODE_ENV || 'development';
+const environmentConfig = config[environment];
+
+
+
 
 const refreshTokenStore = {};
 const accessTokenCache = new NodeCache({ deleteOnExpire: true });
@@ -370,7 +376,7 @@ const isAuthorized = (userId) => {
   return refreshTokenStore[userId] ? true : false;
 };
 
-app.get('/authorization-status', (req, res) => {
+app.get('auth/authorization-status', (req, res) => {
   const isAuthorized = refreshTokenStore[req.sessionID] ? true : false;
 
   if (isAuthorized) {
@@ -383,7 +389,7 @@ app.get('/authorization-status', (req, res) => {
 //   Using an Access Token to Query the HubSpot API   //
 //====================================================//
 
-router.get('/', async (req, res) => {
+router.get('auth/', async (req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.write(`<h2>Install SCORR APP</h2>`);
   
@@ -399,24 +405,13 @@ router.get('/', async (req, res) => {
     res.end();
   });
 
-
-
-return {
+module.exports = {
     router,
     getAccessToken,
     getUserId,
     getUserIdByEmail,
-    isAccessTokenExpired,
-    checkAccessTokenExpiration,
-    stopTask,
-    storeUsers,
     isAuthorized,
-    exchangeForTokens,
-    getAccessTokenFromStorage,
-    getRefreshTokenFromStorage,
-    refreshAccessToken,
-    storeAccessToken,
-    refreshTokenStore,
-    accessTokenCache,
-};
+    getAccessTokenFromStorage
+    
 }
+

@@ -13,13 +13,13 @@ const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require("openai");
 const config = require('./config-test');
 
-const { getAccessTokenFromStorage, getUserId, getUserIdByEmail, getAccessToken } = require('./routes/hs_auth');
-
+const { getAccessTokenFromStorage, getAccessToken } = require('./routes/hs_auth');
 
 const environment = process.env.NODE_ENV || 'development';
 const environmentConfig = config[environment];
 
-const authRouter = require('./routes/hs_auth.js')(environmentConfig);
+
+const authRouter = require('./routes/hs_auth.js');
 
 app.use(cors({
   origin: ['https://www.scorr-app.eu','http://localhost:3000', 'https://test.scorr-app.eu'],
