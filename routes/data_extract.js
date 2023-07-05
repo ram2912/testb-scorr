@@ -59,7 +59,7 @@ const pool = new Pool({
       console.log(accessToken);
       const hubspotClient = new hubspot.Client({ accessToken });
   
-      const limit = 10;
+      const limit = 100;
       let after = undefined;
       const properties = undefined;
       const propertiesWithHistory = undefined;
