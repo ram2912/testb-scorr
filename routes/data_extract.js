@@ -64,21 +64,27 @@ const pool = new Pool({
   
       const limit = 10;
       let after = undefined;
+      const properties = undefined;
+      const propertiesWithHistory = undefined;
+      const associations = undefined;
+      const archived = false;
       let allDeals = [];
   
       while (true) {
         const { results, paging } = await hubspotClient.crm.deals.basicApi.getPage(
-          undefined,
-          limit,
-          after
-        );
+            limit,
+            after,
+            properties,
+            propertiesWithHistory,
+            associations,
+            archived
+          );
   
         allDeals.push(...results);
   
-        if (paging.next) {
-          // Extract the 'after' value from the next link to use in the next iteration
-          const nextPageUrl = new URL(paging.next);
-          after = url.parse(nextPageUrl, true).query.after;
+        if (paging && paging.next) {
+            const nextPageUrl = new URL(paging.next);
+            after = nextPageUrl.searchParams.get('after');
         } else {
           break; // No more pages, exit the loop
         }
