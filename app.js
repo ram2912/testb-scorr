@@ -12,6 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require("openai");
 const config = require('./config-test');
+const router = express.Router();
 
 const { getAccessTokenFromStorage, getAccessToken } = require('./routes/hs_auth');
 
@@ -21,6 +22,7 @@ const environmentConfig = config[environment];
 
 const authRouter = require('./routes/hs_auth.js');
 const extractRouter = require('./routes/data_extract.js');
+
 
 app.use(cors({
   origin: ['https://www.scorr-app.eu','http://localhost:3000', 'https://test.scorr-app.eu'],
@@ -41,6 +43,7 @@ const pool = new Pool({
 
   app.use('/auth', authRouter.router);
   app.use('/extract', extractRouter.router);
+  
 
 
 
