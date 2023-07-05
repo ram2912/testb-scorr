@@ -15,7 +15,6 @@ const { env } = require('process');
 const config = require('../config-test');
 const { getAccessTokenFromStorage } = require('../routes/hs_auth');
 const url = require('url');
-const fs = require('fs');
 
 const router = express.Router();   
 
@@ -87,29 +86,26 @@ const pool = new Pool({
           break; // No more pages, exit the loop
         }
       }
+
+
+ 
   
       console.log(JSON.stringify(allDeals, null, 2));
-
-      const folderPath = '/Users/shrirampawar/Documents/SCORR-backend-test/test_extract';
-      const filePath = path.join(folderPath, 'deals.csv');
-
   
       // Define the CSV writer and file path
       const csvWriter = createCsvWriter({
-        path: filePath, // Set the file path according to your repository structure
+        path: path.join(__dirname, 'deals.csv'), // Set the file path according to your repository structure
         header: Object.keys(allDeals[0]).map((key) => ({ id: key, title: key })),
       });
   
       try {
-        const csvData = allDeals.map((deal) => Object.values(deal).join(','));
-        const csvContent = Object.keys(allDeals[0]).join(',') + '\n' + csvData.join('\n');
-        
-        fs.writeFileSync(filePath, csvContent);
+        // Write the deals to the CSV file
+        await csvWriter.writeRecords(allDeals);
         console.log('CSV file created successfully');
       } catch (error) {
         console.error('Error writing to CSV file:', error);
       }
-  
+      
       res.json(allDeals);
     } catch (error) {
       console.error('Error retrieving deals:', error);
