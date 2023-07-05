@@ -86,9 +86,6 @@ const pool = new Pool({
           break; // No more pages, exit the loop
         }
       }
-
-
- 
   
       console.log(JSON.stringify(allDeals, null, 2));
   
@@ -98,8 +95,13 @@ const pool = new Pool({
         header: Object.keys(allDeals[0]).map((key) => ({ id: key, title: key })),
       });
   
-      // Write the deals to the CSV file
-      await csvWriter.writeRecords(allDeals);
+      try {
+        // Write the deals to the CSV file
+        await csvWriter.writeRecords(allDeals);
+        console.log('CSV file created successfully');
+      } catch (error) {
+        console.error('Error writing to CSV file:', error);
+      }
   
       res.json(allDeals);
     } catch (error) {
