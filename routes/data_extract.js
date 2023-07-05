@@ -36,7 +36,7 @@ const pool = new Pool({
       console.log(accessToken);
       const hubspotClient = new hubspot.Client({ accessToken });
 
-      const objectType = "objectType";
+      const objectType = "deal";
       const archived = false;
       const properties = undefined;
 
@@ -63,13 +63,16 @@ const pool = new Pool({
   
       const limit = 10;
       let after = undefined;
+      const properties = undefined;
+        const propertiesWithHistory = undefined;
+        const associations = undefined;
+        const archived = false;
+
       let allDeals = [];
   
       while (true) {
         const { results, paging } = await hubspotClient.crm.deals.basicApi.getPage(
-          undefined,
-          limit,
-          after
+            limit, after, properties, propertiesWithHistory, associations, archived,
         );
   
         allDeals.push(...results);
