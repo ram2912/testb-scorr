@@ -111,21 +111,7 @@ app.get('/pipelinestage', async (req, res) => {
   });
 
 
-app.get('/', async (req, res) => {
-  res.setHeader('Content-Type', 'text/html');
-  res.write(`<h2>Install SCORR APP</h2>`);
 
-  if (isAuthorized(req.sessionID)) {
-    const accessToken = await getAccessToken(req.sessionID);
-    const contacts = await getContacts(accessToken);
-    res.write(`<h4>Access token: ${accessToken}</h4>`);
-    displayContacts(res, contacts);
-  } else {
-    res.write(`<a href="/install"><h3>Install the app</h3></a>`);
-  }
-  
-  res.end();
-});
 
 
 
