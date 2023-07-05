@@ -399,7 +399,7 @@ router.get('/', async (req, res) => {
       res.write(`<h4>Access token: ${accessToken}</h4>`);
       displayContacts(res, contacts);
     } else {
-      res.write(`<a href="/install"><h3>Install the app</h3></a>`);
+      res.write(`<a href="/auth/install"><h3>Install the app</h3></a>`);
     }
     
     res.end();
