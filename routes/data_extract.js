@@ -52,9 +52,6 @@ const pool = new Pool({
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
-
-
-
   router.get('/all-deals', async (req, res) => {
     try {
       const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
@@ -72,23 +69,26 @@ const pool = new Pool({
   
       while (true) {
         const { results, paging } = await hubspotClient.crm.deals.basicApi.getPage(
-            limit,
-            after,
-            properties,
-            propertiesWithHistory,
-            associations,
-            archived
-          );
+          limit,
+          after,
+          properties,
+          propertiesWithHistory,
+          associations,
+          archived
+        );
   
         allDeals.push(...results);
   
-        if (paging && paging.next) {
-            const nextPageUrl = new URL(paging.next);
-            after = nextPageUrl.searchParams.get('after');
+        if (paging && paging.next && paging.next.link) {
+          const nextPageUrl = new URL(paging.next.link);
+          after = nextPageUrl.searchParams.get('after');
         } else {
           break; // No more pages, exit the loop
         }
       }
+
+
+ 
   
       console.log(JSON.stringify(allDeals, null, 2));
   
