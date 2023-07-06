@@ -103,7 +103,26 @@ router.get('/all-deals', async (req, res) => {
       };
     });
 
-    res.json(dealsWithProperties);
+    const threshold = 0.7; // 70% threshold
+
+// Calculate the number of rows in the array
+const rowCount = dealsWithProperties.length;
+
+// Calculate the minimum number of non-null values required
+const minNonNullCount = rowCount * (1 - threshold);
+
+// Iterate over each property/column and filter out the columns with more null values
+const cleanedDeals = dealsWithProperties.filter((deal) => {
+  const propertyNames = Object.keys(deal.properties);
+  const nonNullCount = propertyNames.reduce((count, propertyName) => {
+    return count + (deal.properties[propertyName] !== null ? 1 : 0);
+  }, 0);
+  return nonNullCount >= minNonNullCount;
+});
+
+console.log('Cleaned deals:', cleanedDeals);
+
+    res.json(cleanedDeals);
   } catch (error) {
     console.error('Error retrieving deals:', error);
     res.status(500).json({ error: 'Internal Server Error' });
