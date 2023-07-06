@@ -109,10 +109,10 @@ router.get('/all-deals', async (req, res) => {
 const dealCount = dealsWithProperties.length;
 
 // Get all unique property names
-const propertyNames = Array.from(new Set(dealsWithProperties.flatMap(deal => Object.keys(deal.properties))));
+const UniquepropertyNames = Array.from(new Set(dealsWithProperties.flatMap(deal => Object.keys(deal.properties))));
 
 // Iterate over each property and filter out the properties with more null values
-const cleanedProperties = propertyNames.filter(propertyName => {
+const cleanedProperties = UniquepropertyNames.filter(propertyName => {
   const nullCount = dealsWithProperties.reduce((count, deal) => {
     return count + (deal.properties[propertyName] === null ? 1 : 0);
   }, 0);
