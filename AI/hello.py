@@ -1,10 +1,10 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-import matplotlib.pyplot as plt
+
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from keras.layers import Dense
+
 
 
 df = pd.read_csv('/Users/shrirampawar/Documents/SCORR-backend-test/AI/Churn.csv')
