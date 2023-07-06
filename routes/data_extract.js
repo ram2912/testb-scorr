@@ -15,7 +15,7 @@ const { env } = require('process');
 const config = require('../config-test');
 const { getAccessTokenFromStorage } = require('../routes/hs_auth');
 const url = require('url');
-
+const { PythonShell } = require('python-shell');
 const router = express.Router();
 
 const environment = process.env.NODE_ENV || 'development';
@@ -146,6 +146,20 @@ router.get('/all-deals', async (req, res) => {
 module.exports = {
   router,
 };
+
+app.get('/clean-data', (req, res) => {
+    // Run the Python script using python-shell
+    PythonShell.run('./AI/testHS.py', null, (err, result) => {
+      if (err) {
+        console.error('Error cleaning data:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+      } else {
+        const cleanedData = JSON.parse(result[0]);
+        res.json(cleanedData);
+      }
+    });
+  });
+
 
 
 
