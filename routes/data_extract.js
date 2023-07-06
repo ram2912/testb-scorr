@@ -44,10 +44,10 @@ const pool = new Pool({
       const properties = undefined;
 
    
-      const dealProperties = await hubspotClient.crm.properties.coreApi.getAll(objectType, archived, properties);
+      const dealPropertiesResponse = await hubspotClient.crm.properties.coreApi.getAll(objectType, archived, properties);
+      const dealProperties = dealPropertiesResponse.results;
       const propertyNames = dealProperties.map(property => property.name);
-
-      
+  
       console.log(`Retrieved ${dealProperties.length} properties`);
 
       res.json(propertyNames);
