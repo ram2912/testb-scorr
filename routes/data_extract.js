@@ -102,9 +102,8 @@ router.get('/all-deals', async (req, res) => {
         archived: deal.archived
       };
     });
-    
-   // Calculate the threshold for null values
-const threshold = 0.5; // 70% threshold
+
+    const threshold = 0.7; // 70% threshold
 
 // Calculate the number of deals in the array
 const dealCount = dealsWithProperties.length;
@@ -119,28 +118,12 @@ const cleanedProperties = propertyNames.filter(propertyName => {
   }, 0);
   
   const nullPercentage = nullCount / dealCount;
+  console.log(`Property: ${propertyName}, Null Percentage: ${nullPercentage}`);
   return nullPercentage < threshold;
 });
 
-// Remove properties with more null values from each deal
-const cleanedDeals = dealsWithProperties.map(deal => {
-  const cleanedPropertiesData = {};
-  cleanedProperties.forEach(propertyName => {
-    cleanedPropertiesData[propertyName] = deal.properties[propertyName];
-  });
-  return {
-    id: deal.id,
-    properties: cleanedPropertiesData,
-    createdAt: deal.createdAt,
-    updatedAt: deal.updatedAt,
-    archived: deal.archived
-  };
-});
-
-console.log(`Cleaned ${cleanedDeals.length} deals`);
-
-res.json(cleanedDeals);
-
+console.log('Cleaned properties:', cleanedProperties);
+    res.json(cleanedDeals);
   } catch (error) {
     console.error('Error retrieving deals:', error);
     res.status(500).json({ error: 'Internal Server Error' });
