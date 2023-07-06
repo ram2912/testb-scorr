@@ -143,11 +143,7 @@ router.get('/all-deals', async (req, res) => {
   }
 });
 
-module.exports = {
-  router,
-};
-
-app.get('/clean-data', (req, res) => {
+router.get('/clean-data', (req, res) => {
     // Run the Python script using python-shell
     PythonShell.run('./AI/testHS.py', null, (err, result) => {
       if (err) {
@@ -159,6 +155,12 @@ app.get('/clean-data', (req, res) => {
       }
     });
   });
+
+
+module.exports = {
+  router,
+};
+
 
 
 
