@@ -65,6 +65,7 @@ const pool = new Pool({
   
       const limit = 100;
       let after = undefined;
+      console.log('names of properties: ',propertyNames)
       const properties = propertyNames;
       const propertiesWithHistory = undefined;
       const associations = undefined;
