@@ -123,7 +123,7 @@ const cleanedProperties = propertyNames.filter(propertyName => {
 });
 
 console.log('Cleaned properties:', cleanedProperties);
-    res.json(cleanedDeals);
+    res.json(cleanedProperties);
   } catch (error) {
     console.error('Error retrieving deals:', error);
     res.status(500).json({ error: 'Internal Server Error' });
