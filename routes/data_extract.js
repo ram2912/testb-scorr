@@ -30,6 +30,8 @@ const pool = new Pool({
     }
   });
 
+  let propertyNames = [];
+
   router.get('/deal-properties', async (req, res) => {
     try {
       const accessTokenPromise = getAccessTokenFromStorage(); // Get the access token as a Promise
@@ -43,10 +45,12 @@ const pool = new Pool({
 
    
       const dealProperties = await hubspotClient.crm.properties.coreApi.getAll(objectType, archived, properties);
+      const propertyNames = dealProperties.map(property => property.name);
 
-      console.log(JSON.stringify(dealProperties, null, 2));
+      
+      console.log(`Retrieved ${dealProperties.length} properties`);
 
-      res.json(dealProperties);
+      res.json(propertyNames);
     } catch (error) {
       console.error('Error retrieving deal:', error);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -61,7 +65,7 @@ const pool = new Pool({
   
       const limit = 100;
       let after = undefined;
-      const properties = undefined;
+      const properties = propertyNames;
       const propertiesWithHistory = undefined;
       const associations = undefined;
       const archived = false;
@@ -76,8 +80,10 @@ const pool = new Pool({
           associations,
           archived
         );
+
+        const filteredDeals = results.filter(deal => new Date(deal.createdAt) > new Date('2022-10-01'));
   
-        allDeals.push(...results);
+        allDeals.push(...filteredDeals);
   
         if (paging && paging.next && paging.next.link) {
           const nextPageUrl = new URL(paging.next.link);
@@ -89,7 +95,7 @@ const pool = new Pool({
   
       console.log(`Retrieved ${allDeals.length} deals`);
 
-      const folderPath = "/Users/shrirampawar/Documents/SCORR-backend-test/test_extract";
+      const folderPath = "./test_extract";
   
       // Define the CSV writer and file path
       const csvWriter = createCsvWriter({
@@ -110,6 +116,11 @@ const pool = new Pool({
       console.error('Error retrieving deals:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
+  });
+
+  router.get('/download-deals', (req, res) => {
+    const filePath = path.join(__dirname, 'test_extract/deals.csv');
+    res.download(filePath);
   });
 
   module.exports = {
