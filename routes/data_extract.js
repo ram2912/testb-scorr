@@ -105,25 +105,41 @@ router.get('/all-deals', async (req, res) => {
 
     const threshold = 0.7; // 70% threshold
 
-// Calculate the number of deals in the array
-const dealCount = dealsWithProperties.length;
+    // Calculate the number of deals in the array
+    const dealCount = dealsWithProperties.length;
 
-// Get all unique property names
-const UniquepropertyNames = Array.from(new Set(dealsWithProperties.flatMap(deal => Object.keys(deal.properties))));
+    // Get all unique property names
+    const uniquePropertyNames = Array.from(new Set(dealsWithProperties.flatMap(deal => Object.keys(deal.properties))));
 
-// Iterate over each property and filter out the properties with more null values
-const cleanedProperties = UniquepropertyNames.filter(propertyName => {
-  const nullCount = dealsWithProperties.reduce((count, deal) => {
-    return count + (deal.properties[propertyName] === null ? 1 : 0);
-  }, 0);
-  
-  const nullPercentage = nullCount / dealCount;
-  console.log(`Property: ${propertyName}, Null Percentage: ${nullPercentage}`);
-  return nullPercentage < threshold;
-});
+    // Iterate over each property and filter out the properties with more null values
+    const cleanedProperties = uniquePropertyNames.filter(propertyName => {
+      const nullCount = dealsWithProperties.reduce((count, deal) => {
+        return count + (deal.properties[propertyName] === null ? 1 : 0);
+      }, 0);
+      
+      const nullPercentage = nullCount / dealCount;
+      console.log(`Property: ${propertyName}, Null Percentage: ${nullPercentage}`);
+      return nullPercentage < threshold;
+    });
 
-console.log('Cleaned properties:', cleanedProperties);
-    res.json(cleanedProperties);
+    console.log('Cleaned properties:', cleanedProperties);
+
+    // Remove properties with more null values from each deal
+    const cleanedDeals = dealsWithProperties.map(deal => {
+      const cleanedPropertiesData = {};
+      cleanedProperties.forEach(propertyName => {
+        cleanedPropertiesData[propertyName] = deal.properties[propertyName];
+      });
+      return {
+        id: deal.id,
+        properties: cleanedPropertiesData,
+        createdAt: deal.createdAt,
+        updatedAt: deal.updatedAt,
+        archived: deal.archived
+      };
+    });
+
+    res.json(cleanedDeals);
   } catch (error) {
     console.error('Error retrieving deals:', error);
     res.status(500).json({ error: 'Internal Server Error' });
