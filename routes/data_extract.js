@@ -10,7 +10,7 @@ const crypto = require('crypto');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const bodyParser = require('body-parser');
-const { Configuration, OpenAIApi } = require("openai");
+const { Configuration, OpenAIApi } = require('openai');
 const { env } = require('process');
 const config = require('../config-test');
 const { getAccessTokenFromStorage } = require('../routes/hs_auth');
@@ -22,6 +22,7 @@ const environment = process.env.NODE_ENV || 'development';
 const environmentConfig = config[environment];
 
 let propertyNames = [];
+let propertyLabels = {};
 
 router.get('/deal-properties', async (req, res) => {
   try {
@@ -30,17 +31,25 @@ router.get('/deal-properties', async (req, res) => {
     console.log(accessToken);
     const hubspotClient = new hubspot.Client({ accessToken });
 
-    const objectType = "deal";
+    const objectType = 'deal';
     const archived = false;
     const properties = undefined;
 
-    const dealPropertiesResponse = await hubspotClient.crm.properties.coreApi.getAll(objectType, archived, properties);
+    const dealPropertiesResponse = await hubspotClient.crm.properties.coreApi.getAll(
+      objectType,
+      archived,
+      properties
+    );
     const dealProperties = dealPropertiesResponse.results;
-    propertyNames = dealProperties.map(property => property.name);
+    propertyNames = dealProperties.map((property) => property.name);
+    propertyLabels = dealProperties.reduce((labels, property) => {
+      labels[property.name] = property.label;
+      return labels;
+    }, {});
 
     console.log(`Retrieved ${dealProperties.length} properties`);
 
-    res.json(propertyNames);
+    res.json({ propertyNames, propertyLabels });
   } catch (error) {
     console.error('Error retrieving deal:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -73,7 +82,7 @@ router.get('/all-deals', async (req, res) => {
         archived
       );
 
-      const filteredDeals = results.filter(deal => new Date(deal.createdAt) > new Date('2022-10-01'));
+      const filteredDeals = results.filter((deal) => new Date(deal.createdAt) > new Date('2022-10-01'));
 
       allDeals.push(...filteredDeals);
 
@@ -87,36 +96,24 @@ router.get('/all-deals', async (req, res) => {
 
     console.log(`Retrieved ${allDeals.length} deals`);
 
-    const dealsAfterOct2022 = allDeals.filter(deal => new Date(deal.createdAt) > new Date('2022-10-01'));
-
-    const dealsWithProperties = dealsAfterOct2022.map(deal => {
-      const propertiesData = {};
-      propertyNames.forEach(propertyName => {
-        propertiesData[propertyName] = deal.properties[propertyName];
-      });
-      return {
-        id: deal.id,
-        properties: propertiesData,
-        createdAt: deal.createdAt,
-        updatedAt:deal.updatedAt,
-        archived: deal.archived
-      };
-    });
+    const dealsAfterOct2022 = allDeals.filter((deal) => new Date(deal.createdAt) > new Date('2022-10-01'));
 
     const threshold = 0.7; // 70% threshold
 
     // Calculate the number of deals in the array
-    const dealCount = dealsWithProperties.length;
+    const dealCount = dealsAfterOct2022.length;
 
     // Get all unique property names
-    const uniquePropertyNames = Array.from(new Set(dealsWithProperties.flatMap(deal => Object.keys(deal.properties))));
+    const uniquePropertyNames = Array.from(
+      new Set(dealsAfterOct2022.flatMap((deal) => Object.keys(deal.properties)))
+    );
 
     // Iterate over each property and filter out the properties with more null values
-    const cleanedProperties = uniquePropertyNames.filter(propertyName => {
-      const nullCount = dealsWithProperties.reduce((count, deal) => {
+    const cleanedProperties = uniquePropertyNames.filter((propertyName) => {
+      const nullCount = dealsAfterOct2022.reduce((count, deal) => {
         return count + (deal.properties[propertyName] === null ? 1 : 0);
       }, 0);
-      
+
       const nullPercentage = nullCount / dealCount;
       console.log(`Property: ${propertyName}, Null Percentage: ${nullPercentage}`);
       return nullPercentage < threshold;
@@ -124,11 +121,11 @@ router.get('/all-deals', async (req, res) => {
 
     console.log('Cleaned properties:', cleanedProperties);
 
-    // Remove properties with more null values from each deal
-    const cleanedDeals = dealsWithProperties.map(deal => {
+    // Remove properties with more null values from each deal and convert labels to properties
+    const cleanedDeals = dealsAfterOct2022.map((deal) => {
       const cleanedPropertiesData = {};
-      cleanedProperties.forEach(propertyName => {
-        cleanedPropertiesData[propertyName] = deal.properties[propertyName];
+      cleanedProperties.forEach((propertyName) => {
+        cleanedPropertiesData[propertyLabels[propertyName]] = deal.properties[propertyName];
       });
       return {
         id: deal.id,
@@ -149,6 +146,7 @@ router.get('/all-deals', async (req, res) => {
 module.exports = {
   router,
 };
+
 
 
 
