@@ -9,7 +9,7 @@ response = requests.get("https://testback.scorr-app.eu/extract/all-deals")
 deals_data = response.json()
 
 # Split the deals data into smaller batches
-batch_size = 1000
+batch_size = 400
 batches = [deals_data[i:i+batch_size] for i in range(0, len(deals_data), batch_size)]
 
 for batch in batches:
