@@ -136,7 +136,8 @@ cleanedDeals = dealsAfterOct2022.map((deal) => {
 
 router.get('/deals', async (req, res) => {
     try {
-        res.json(cleanedDeals);
+        const deals = cleanedDeals;
+        res.json(deals);
         } catch (error) {
             console.error('Error retrieving deals:', error);
             res.status(500).json({ error: 'Internal Server Error' });
