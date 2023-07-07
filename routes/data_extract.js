@@ -150,9 +150,11 @@ router.get('/clean-data', (req, res) => {
     const filteredDeals = cleanedDeals.map((deal) => {
       const cleanedPropertiesData = {};
       for (const property in deal.properties) {
-        const nullCount = deal.properties[property].filter((value) => value === null).length;
-        if (nullCount / totalDeals <= threshold) {
-          cleanedPropertiesData[property] = deal.properties[property];
+        if (deal.properties[property] !== null) {
+          const nullCount = deal.properties[property].filter((value) => value === null).length;
+          if (nullCount / totalDeals <= threshold) {
+            cleanedPropertiesData[propertyLabels[property]] = deal.properties[property];
+          }
         }
       }
       return { ...deal, properties: cleanedPropertiesData };
@@ -162,6 +164,7 @@ router.get('/clean-data', (req, res) => {
   
     res.json(cleanedDeals);
   });
+  
   
 
 module.exports = {
