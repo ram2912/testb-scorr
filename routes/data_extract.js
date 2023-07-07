@@ -144,26 +144,48 @@ router.get('/deals', async (req, res) => {
 });
 
 router.get('/clean-data', (req, res) => {
+    try {
     // Filter out columns with more than 50% null values
-    const threshold = 0.5;
-    const totalDeals = cleanedDeals.length;
-    const filteredDeals = cleanedDeals.map((deal) => {
-      const cleanedPropertiesData = {};
-      for (const property in deal.properties) {
-        if (deal.properties[property] !== null) {
-          const nullCount = deal.properties[property].filter((value) => value === null).length;
-          if (nullCount / totalDeals <= threshold) {
-            cleanedPropertiesData[propertyLabels[property]] = deal.properties[property];
-          }
-        }
-      }
-      return { ...deal, properties: cleanedPropertiesData };
-    });
+    const uniquePropertyNames = Array.from(
+        new Set(cleanedDeals.flatMap((deal) => Object.keys(deal.properties)))
+      );
   
-    cleanedDeals = filteredDeals;
+      // Iterate over each property and filter out the properties with more null values
+      const cleanedProperties = uniquePropertyNames.filter((propertyName) => {
+        const nullCount = dealsAfterOct2022.reduce((count, deal) => {
+          return count + (deal.properties[propertyName] === null ? 1 : 0);
+        }, 0);
   
-    res.json(cleanedDeals);
-  });
+        const nullPercentage = nullCount / dealCount;
+        return nullPercentage < threshold;
+      });
+  
+      
+  
+      // Remove properties with more null values from each deal and convert labels to properties
+      const cleanedDeals1 = cleanedDeals.map((deal) => {
+        const cleanedPropertiesData = {};
+        cleanedProperties.forEach((propertyName) => {
+          cleanedPropertiesData[propertyLabels[propertyName]] = deal.properties[propertyName];
+        });
+        return {
+          id: deal.id,
+          properties: cleanedPropertiesData,
+          createdAt: deal.createdAt,
+          updatedAt: deal.updatedAt,
+          archived: deal.archived
+        };
+      });
+
+      cleanedDeals = cleanedDeals1;
+  
+      res.json(cleanedDeals);
+  } catch (error) {
+    console.error('Error retrieving deals:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
   
   
 
