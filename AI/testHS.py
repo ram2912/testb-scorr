@@ -4,68 +4,82 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-# Make a GET request to the endpoint to retrieve the deals data
-response = requests.get("https://testback.scorr-app.eu/extract/all-deals")
-deals_data = response.json()
+try:
+    # Make a GET request to the endpoint to retrieve the deals data
+    response = requests.get("https://testback.scorr-app.eu/extract/all-deals")
+    response.raise_for_status()  # Raise an exception for non-2xx status codes
 
-# Split the deals data into smaller batches
-batch_size = 400
-batches = [deals_data[i:i+batch_size] for i in range(0, len(deals_data), batch_size)]
+    # Parse the JSON response
+    deals_data = response.json()
+    deals_data = list(deals_data)
 
-for batch in batches:
-    # Convert the deals data batch to a Pandas DataFrame
-    df = pd.DataFrame(batch)
+    # Split the deals data into smaller batches
+    batch_size = 400
+    batches = [deals_data[i:i + batch_size] for i in range(0, len(deals_data), batch_size)]
 
-    # Rest of the data processing steps (Steps 3 to 11) go here
-    missing_cols = df.columns[df.isnull().any()].tolist()
+    for i, batch in enumerate(batches):
+        # Convert the deals data batch to a Pandas DataFrame
+        df = pd.DataFrame(batch)
 
-    # Remove columns with high missing values (e.g., more than 70%)
-    threshold = 0.7
-    df = df.dropna(thresh=len(df) * threshold, axis=1)
+        # Rest of the data processing steps (Steps 3 to 11) go here
+        missing_cols = df.columns[df.isnull().any()].tolist()
 
-    # Impute missing values for numeric columns
-    numeric_cols = df.select_dtypes(include=[np.number]).columns
-    df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
+        # Remove columns with high missing values (e.g., more than 70%)
+        threshold = 0.7
+        df = df.dropna(thresh=len(df) * threshold, axis=1)
 
-    # Impute missing values for categorical columns
-    categorical_cols = df.select_dtypes(include=["object"]).columns
-    df[categorical_cols] = df[categorical_cols].fillna("Unknown")
+        # Impute missing values for numeric columns
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
 
-    # Step 4: Feature Engineering
-    # Extract useful information from date columns
-    df['createdAt'] = pd.to_datetime(df['createdAt'])
-    df['Year'] = df['createdAt'].dt.year
-    df['Month'] = df['createdAt'].dt.month
+        # Impute missing values for categorical columns
+        categorical_cols = df.select_dtypes(include=["object"]).columns
+        df[categorical_cols] = df[categorical_cols].fillna("Unknown")
 
-    # Calculate derived features, e.g., duration between important dates
+        # Step 4: Feature Engineering
+        # Extract useful information from date columns
+        df['createdAt'] = pd.to_datetime(df['createdAt'])
+        df['Year'] = df['createdAt'].dt.year
+        df['Month'] = df['createdAt'].dt.month
 
-    # Step 5: Data Transformation
-    # Exclude columns with dictionary values from one-hot encoding
-    exclude_cols = df.select_dtypes(include=[object]).columns
-    df_encoded = pd.get_dummies(df.drop(exclude_cols, axis=1))
+        # Calculate derived features, e.g., duration between important dates
 
-    # Join back the excluded columns to the encoded DataFrame
-    df_encoded = pd.concat([df_encoded, df[exclude_cols]], axis=1)
+        # Step 5: Data Transformation
+        # Exclude columns with dictionary values from one-hot encoding
+        exclude_cols = df.select_dtypes(include=[object]).columns
+        df_encoded = pd.get_dummies(df.drop(exclude_cols, axis=1))
 
-    # Normalize or scale numeric features
-    numeric_cols = df_encoded.select_dtypes(include=[np.number]).columns
-    scaler = StandardScaler()
-    df_encoded[numeric_cols] = scaler.fit_transform(df_encoded[numeric_cols])
+        # Join back the excluded columns to the encoded DataFrame
+        df_encoded = pd.concat([df_encoded, df[exclude_cols]], axis=1)
 
-# Step 6: Handling Outliers
-# Handle outliers in numeric columns, e.g., cap/extreme values or transformation
+        # Normalize or scale numeric features
+        numeric_cols = df_encoded.select_dtypes(include=[np.number]).columns
+        scaler = StandardScaler()
+        df_encoded[numeric_cols] = scaler.fit_transform(df_encoded[numeric_cols])
 
-# Step 7: Feature Selection
-# Perform feature selection using techniques like correlation analysis or feature importance
+        # Step 6: Handling Outliers
+        # Handle outliers in numeric columns, e.g., cap/extreme values or transformation
 
-# Step 8: Data Splitting
-# Split the pre-processed dataset into train, validation, and test sets
+        # Step 7: Feature Selection
+        # Perform feature selection using techniques like correlation analysis or feature importance
 
-# Step 9: Model Training
+        # Step 8: Data Splitting
+        # Split the pre-processed dataset into train, validation, and test sets
 
-# Step 10: Model Evaluation
+        # Step 9: Model Training
 
-# Step 11: Iterate and Improve
-    # Print the cleaned data for each batch
-    cleaned_data = df_encoded.to_json(orient="records")
-    print(cleaned_data)
+        # Step 10: Model Evaluation
+
+        # Step 11: Iterate and Improve
+        # Print the cleaned data for each batch
+        cleaned_data = df_encoded.to_json(orient="records")
+        print(f"Processed Batch {i + 1}/{len(batches)} - Total Records: {len(df_encoded)}")
+        print(cleaned_data)
+
+except requests.exceptions.RequestException as e:
+    print(f"Error during request: {e}")
+except ValueError as e:
+    print(f"Error decoding JSON response: {e}")
+except Exception as e:
+    print(f"An error occurred: {e}")
+
