@@ -144,18 +144,25 @@ router.get('/deals', async (req, res) => {
 });
 
 router.get('/clean-data', (req, res) => {
-    // Run the Python script using python-shell
-    PythonShell.run('./AI/testHS.py', null, (err, result) => {
-      if (err) {
-        console.error('Error cleaning data:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-      } else {
-        const cleanedData = JSON.parse(result[0]);
-        res.json(cleanedData);
+    // Filter out columns with more than 50% null values
+    const threshold = 0.5;
+    const totalDeals = cleanedDeals.length;
+    const filteredDeals = cleanedDeals.map((deal) => {
+      const cleanedPropertiesData = {};
+      for (const property in deal.properties) {
+        const nullCount = deal.properties[property].filter((value) => value === null).length;
+        if (nullCount / totalDeals <= threshold) {
+          cleanedPropertiesData[property] = deal.properties[property];
+        }
       }
+      return { ...deal, properties: cleanedPropertiesData };
     });
+  
+    cleanedDeals = filteredDeals;
+  
+    res.json(cleanedDeals);
   });
-
+  
 
 module.exports = {
   router,
