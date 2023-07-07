@@ -148,14 +148,14 @@ router.get('/clean-data', (req, res) => {
     // Filter out columns with more than 50% null values
     const threshold = 0.7; // 70% threshold
     const dealCount = cleanedDeals.length;
-    
+
     const uniquePropertyNames = Array.from(
         new Set(cleanedDeals.flatMap((deal) => Object.keys(deal.properties)))
       );
   
       // Iterate over each property and filter out the properties with more null values
       const cleanedProperties = uniquePropertyNames.filter((propertyName) => {
-        const nullCount = dealsAfterOct2022.reduce((count, deal) => {
+        const nullCount = cleanedDeals.reduce((count, deal) => {
           return count + (deal.properties[propertyName] === null ? 1 : 0);
         }, 0);
   
