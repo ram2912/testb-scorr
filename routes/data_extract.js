@@ -146,6 +146,9 @@ router.get('/deals', async (req, res) => {
 router.get('/clean-data', (req, res) => {
     try {
     // Filter out columns with more than 50% null values
+    const threshold = 0.7; // 70% threshold
+    const dealCount = cleanedDeals.length;
+    
     const uniquePropertyNames = Array.from(
         new Set(cleanedDeals.flatMap((deal) => Object.keys(deal.properties)))
       );
