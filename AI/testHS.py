@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 try:
     # Make a GET request to the endpoint to retrieve the deals data
-    response = requests.get("https://testback.scorr-app.eu/extract/all-deals")
+    response = requests.get("https://testback.scorr-app.eu/extract/deals")
     response.raise_for_status()  # Raise an exception for non-2xx status codes
 
     # Parse the JSON response
