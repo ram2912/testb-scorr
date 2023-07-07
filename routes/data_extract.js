@@ -56,6 +56,8 @@ router.get('/deal-properties', async (req, res) => {
   }
 });
 
+let cleanedDeals = [];
+
 router.get('/all-deals', async (req, res) => {
   try {
     const accessTokenPromise = getAccessTokenFromStorage();
@@ -110,7 +112,7 @@ router.get('/all-deals', async (req, res) => {
 
     // Remove properties with more null values from each deal and convert labels to properties
     // Remove properties with more null values from each deal and convert labels to properties
-const cleanedDeals = dealsAfterOct2022.map((deal) => {
+cleanedDeals = dealsAfterOct2022.map((deal) => {
     const cleanedPropertiesData = {};
     uniquePropertyNames.forEach((propertyName) => {
       cleanedPropertiesData[propertyLabels[propertyName]] = deal.properties[propertyName];
@@ -130,6 +132,15 @@ const cleanedDeals = dealsAfterOct2022.map((deal) => {
     console.error('Error retrieving deals:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
+});
+
+router.get('/deals', async (req, res) => {
+    try {
+        res.json(cleanedDeals);
+        } catch (error) {
+            console.error('Error retrieving deals:', error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
 });
 
 router.get('/clean-data', (req, res) => {
