@@ -65,7 +65,6 @@ router.get('/all-deals', async (req, res) => {
 
     const limit = 100;
     let after = undefined;
-    console.log('names of properties: ', propertyNames);
     const properties = propertyNames;
     const propertiesWithHistory = undefined;
     const associations = undefined;
@@ -98,10 +97,6 @@ router.get('/all-deals', async (req, res) => {
 
     const dealsAfterOct2022 = allDeals.filter((deal) => new Date(deal.createdAt) > new Date('2022-10-01'));
 
-    const threshold = 0.7; // 70% threshold
-
-    // Calculate the number of deals in the array
-    const dealCount = dealsAfterOct2022.length;
 
     // Get all unique property names
     const uniquePropertyNames = Array.from(
@@ -109,32 +104,26 @@ router.get('/all-deals', async (req, res) => {
     );
 
     // Iterate over each property and filter out the properties with more null values
-    const cleanedProperties = uniquePropertyNames.filter((propertyName) => {
-      const nullCount = dealsAfterOct2022.reduce((count, deal) => {
-        return count + (deal.properties[propertyName] === null ? 1 : 0);
-      }, 0);
+   
 
-      const nullPercentage = nullCount / dealCount;
-      console.log(`Property: ${propertyName}, Null Percentage: ${nullPercentage}`);
-      return nullPercentage < threshold;
-    });
-
-    console.log('Cleaned properties:', cleanedProperties);
+    
 
     // Remove properties with more null values from each deal and convert labels to properties
-    const cleanedDeals = dealsAfterOct2022.map((deal) => {
-      const cleanedPropertiesData = {};
-      cleanedProperties.forEach((propertyName) => {
-        cleanedPropertiesData[propertyLabels[propertyName]] = deal.properties[propertyName];
-      });
-      return {
-        id: deal.id,
-        properties: cleanedPropertiesData,
-        createdAt: deal.createdAt,
-        updatedAt: deal.updatedAt,
-        archived: deal.archived
-      };
+    // Remove properties with more null values from each deal and convert labels to properties
+const cleanedDeals = dealsAfterOct2022.map((deal) => {
+    const cleanedPropertiesData = {};
+    uniquePropertyNames.forEach((propertyName) => {
+      cleanedPropertiesData[propertyLabels[propertyName]] = deal.properties[propertyName];
     });
+    return {
+      id: deal.id,
+      properties: cleanedPropertiesData,
+      createdAt: deal.createdAt,
+      updatedAt: deal.updatedAt,
+      archived: deal.archived
+    };
+  });
+  
 
     res.json(cleanedDeals);
   } catch (error) {

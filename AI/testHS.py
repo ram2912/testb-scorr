@@ -29,8 +29,10 @@ df[categorical_cols] = df[categorical_cols].fillna("Unknown")
 
 # Step 4: Feature Engineering
 # Extract useful information from date columns
-df["Year"] = pd.to_datetime(df["createdAt"]).dt.year
-df["Month"] = pd.to_datetime(df["createdAt"]).dt.month
+df['createdAt'] = pd.to_datetime(df['createdAt'])
+df['Year'] = df['createdAt'].dt.year
+df['Month'] = df['createdAt'].dt.month
+
 
 # Calculate derived features, e.g., duration between important dates
 
