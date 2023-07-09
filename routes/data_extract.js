@@ -144,48 +144,55 @@ router.get('/deals', async (req, res) => {
 });
 
 router.get('/clean-data', (req, res) => {
-    try {
-      // Filter out columns with more than 70% null values
-      const threshold = 0.7; // 70% threshold
-      const dealCount = cleanedDeals.length;
-  
-      const uniquePropertyLabels = Array.from(
-        new Set(Object.keys(cleanedDeals[0].properties))
-      );
-  
-      // Iterate over each property and filter out the properties with more null values
-      const cleanedProperties = uniquePropertyLabels.filter((propertyLabel) => {
-        const nullCount = cleanedDeals.reduce((count, deal) => {
-          return count + (deal.properties[propertyLabel] === null ? 1 : 0);
-        }, 0);
-  
-        const nullPercentage = nullCount / dealCount;
-        return nullPercentage < threshold;
+  try {
+    // Filter out columns with more than 70% null values
+    const threshold = 0.7; // 70% threshold
+    const dealCount = cleanedDeals.length;
+
+    const uniquePropertyLabels = Array.from(
+      new Set(Object.keys(cleanedDeals[0].properties))
+    );
+
+    // Iterate over each property and filter out the properties with more null values
+    const cleanedProperties = uniquePropertyLabels.filter((propertyLabel) => {
+      const nullCount = cleanedDeals.reduce((count, deal) => {
+        return count + (deal.properties[propertyLabel] === null ? 1 : 0);
+      }, 0);
+
+      const nullPercentage = nullCount / dealCount;
+      return nullPercentage < threshold;
+    });
+
+    // Remove properties with more null values from each deal
+    const cleanedDeals1 = cleanedDeals.map((deal) => {
+      const cleanedPropertiesData = {};
+      cleanedProperties.forEach((propertyLabel) => {
+        cleanedPropertiesData[propertyLabel] = deal.properties[propertyLabel];
       });
-  
-      // Remove properties with more null values from each deal
-      const cleanedDeals1 = cleanedDeals.map((deal) => {
-        const cleanedPropertiesData = {};
-        cleanedProperties.forEach((propertyLabel) => {
-          cleanedPropertiesData[propertyLabel] = deal.properties[propertyLabel];
-        });
-        return {
-          id: deal.id,
-          properties: cleanedPropertiesData,
-          createdAt: deal.createdAt,
-          updatedAt: deal.updatedAt,
-          archived: deal.archived
-        };
-      });
-  
-      cleanedDeals = cleanedDeals1;
-  
-      res.json(cleanedDeals);
-    } catch (error) {
-      console.error('Error retrieving deals:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+      return {
+        id: deal.id,
+        properties: cleanedPropertiesData,
+        createdAt: deal.createdAt,
+        updatedAt: deal.updatedAt,
+        archived: deal.archived
+      };
+    });
+
+    cleanedDeals = cleanedDeals1;
+
+    const response = {
+      cleanedDeals: cleanedDeals,
+      removedColumns: uniquePropertyLabels.length - cleanedProperties.length,
+      threshold: threshold
+    };
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error retrieving deals:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
   
 
   
