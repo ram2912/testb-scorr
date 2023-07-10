@@ -23,6 +23,7 @@ const environmentConfig = config[environment];
 
 let propertyNames = [];
 let propertyLabels = {};
+let modelResults = {};
 
 router.get('/deal-properties', async (req, res) => {
   try {
@@ -199,6 +200,9 @@ router.post('/model', async (req, res) => {
     const result = req.body;
     console.log('Recieved Json: ',result);
 
+    modelResults = result;
+
+
     res.status(200).json({ message: 'Success' });
   } catch (error) {
     console.error('Error retrieving model:', error);
@@ -206,10 +210,15 @@ router.post('/model', async (req, res) => {
   }
 });
 
-  
+router.get('/model-result', async (req, res) => {
+  try {
+    res.json(modelResults);
+  } catch (error) {
+    console.error('Error retrieving model:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
-  
-  
 
 module.exports = {
   router,
