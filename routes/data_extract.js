@@ -193,6 +193,19 @@ router.get('/clean-data', (req, res) => {
   }
 });
 
+
+router.post('/model', async (req, res) => {
+  try {
+    const result = req.body;
+    console.log('Recieved Json: ',result);
+
+    res.status(200).json({ message: 'Success' });
+  } catch (error) {
+    console.error('Error retrieving model:', error);
+    res.status(500).json({ error: 'Internal Server Error' }); 
+  }
+});
+
   
 
   
