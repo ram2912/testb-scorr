@@ -17,7 +17,7 @@ df = pd.DataFrame(cleaned_deals)
 target = 'Is Closed Won'
 
 selected_columns = ['Latest Source', 'Latest Source Company', 'Latest Source Contact',
-                    'Original Source Type', 'Last Modified Date', 'Recent Sales Email Replied Date',
+                    'Original Source Type',
                     'Number of Associated Contacts', 'Number of Sales Activities',
                     'Opportunity Cluster', target]
 
