@@ -22,6 +22,7 @@ const environmentConfig = config[environment];
 
 const authRouter = require('./routes/hs_auth.js');
 const extractRouter = require('./routes/data_extract.js');
+const userRouter = require('./routes/users.js');
 
 
 app.use(cors({
@@ -43,6 +44,7 @@ const pool = new Pool({
 
   app.use('/auth', authRouter.router);
   app.use('/extract', extractRouter.router);
+  app.use('/users', userRouter.router);
   
 
 
