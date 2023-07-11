@@ -3,6 +3,11 @@ const router = express.Router();
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const config = require('../config-test');
+
+
+const environment = process.env.NODE_ENV || 'development';
+const environmentConfig = config[environment];
 
 const pool = new Pool({
   connectionString: environmentConfig.databaseUrl,
