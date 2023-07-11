@@ -4,6 +4,8 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config-test');
+const cookieParser = require('cookie-parser');
+
 
 
 const environment = process.env.NODE_ENV || 'development';
@@ -15,6 +17,8 @@ const pool = new Pool({
     rejectUnauthorized: false // This is needed for local development, remove it for production
   }
 });
+
+router.use(cookieParser());
 
 // GET /users/:userId - Get user details
 router.get('/:userId', async (req, res) => {
@@ -47,6 +51,12 @@ router.post('/login', async (req, res) => {
     // Password is valid, generate a JWT token
     const token = jwt.sign({ userId: user.id }, 'your-secret-key');
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true, // Set to true if serving over HTTPS
+      // maxAge: expirationTime, // Set the expiration time if needed
+    });
+
     // Return the token and user details
     return res.status(200).json({ token, user });
   } catch (error) {
@@ -68,6 +78,7 @@ function verifyToken(req, res, next) {
     // Verify and decode the token
     const decoded = jwt.verify(token, 'your-secret-key');
 
+   
     // Attach the decoded data (userId) to the request object for further use
     req.user = decoded;
 
@@ -104,6 +115,13 @@ router.post('/signup', async (req, res) => {
 
     // Generate a JWT token for the new user
     const token = jwt.sign({ userId: user.id }, 'your-secret-key');
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: true, // Set to true if serving over HTTPS
+      // maxAge: expirationTime, // Set the expiration time if needed
+    });
+
 
     // Return the token and user details
     return res.status(201).json({ token, user });
