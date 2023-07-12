@@ -133,8 +133,12 @@ router.post('/signup', async (req, res) => {
 
 // Example route that requires authentication
 router.get('/protected', verifyToken, (req, res) => {
-  // Handle the protected route logic
-  res.status(200).json({ message: 'Access granted to protected route' });
+  try{
+    res.json({ message: 'You are authorized' });
+  } catch (error) {
+    console.error('Error during signup:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 
