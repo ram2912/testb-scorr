@@ -140,7 +140,7 @@ router.post('/signup', async (req, res) => {
 // Example route that requires authentication
 router.get('/protected', verifyToken, (req, res) => {
   try{
-    res.json({ message: 'You are authorized' });
+    return res.json({ message: 'You are authorized' });
   } catch (error) {
     console.error('Error during signup:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -151,10 +151,10 @@ router.get('/all-users', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM users');
     const users = result.rows;
-    res.json({ users });
+    return res.json({ users });
   } catch (error) {
     console.error('Error retrieving users:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
