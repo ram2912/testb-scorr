@@ -115,13 +115,12 @@ router.post('/signup', async (req, res) => {
 
     // Generate a JWT token for the new user
     const token = jwt.sign({ userId: user.id }, 'your-secret-key');
-
+    
     res.cookie('token', token, {
       httpOnly: true,
       secure: true, // Set to true if serving over HTTPS
       // maxAge: expirationTime, // Set the expiration time if needed
     });
-
 
     // Return the token and user details
     return res.status(201).json({ token, user });
