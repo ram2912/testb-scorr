@@ -78,17 +78,23 @@ function verifyToken(req, res, next) {
     // Verify and decode the token
     const decoded = jwt.verify(token, 'your-secret-key');
 
-   
     // Attach the decoded data (userId) to the request object for further use
     req.user = decoded;
 
     // Proceed to the next middleware or route handler
     next();
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired' });
+    } else if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
     console.error('Error verifying token:', error);
     return res.status(401).json({ error: 'Unauthorized' });
   }
 }
+
 
 // POST /users/signup - User signup
 router.post('/signup', async (req, res) => {
@@ -132,7 +138,7 @@ router.post('/signup', async (req, res) => {
 
 
 // Example route that requires authentication
-router.get('/protected', verifyToken, (req, res) => {
+router.get('/protected', (req, res) => {
   try{
     res.json({ message: 'You are authorized' });
   } catch (error) {
