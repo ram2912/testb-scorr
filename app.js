@@ -47,7 +47,14 @@ const pool = new Pool({
   app.use('/users', userRouter.router);
   
 
-
+  app.get('/protected', (req, res) => {
+    try{
+      return res.json({ message: 'You are authorized' });
+    } catch (error) {
+      console.error('Error during signup:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 
 
