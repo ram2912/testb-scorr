@@ -70,6 +70,7 @@ function verifyToken(req, res, next) {
   try {
     // Verify and decode the token
     const decoded = jwt.verify(token, 'your-secret-key');
+    console.log(decoded);
 
     // Attach the decoded data (userId) to the request object for further use
     req.user = decoded;
@@ -78,8 +79,10 @@ function verifyToken(req, res, next) {
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
+      console.error('Token expired:', error);
       return res.status(401).json({ error: 'Token expired' });
     } else if (error.name === 'JsonWebTokenError') {
+      console.error('Invalid token:', error);
       return res.status(401).json({ error: 'Invalid token' });
     }
 
