@@ -62,6 +62,7 @@ router.post('/login', async (req, res) => {
 // Middleware function to verify the JWT token and authenticate the user
 function verifyToken(req, res, next) {
   const token = req.headers.authorization;
+  console.log('received token: ',token);
 
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
