@@ -61,9 +61,17 @@ router.post('/login', async (req, res) => {
 
 // Middleware function to verify the JWT token and authenticate the user
 function verifyToken(req, res, next) {
-  const token = req.headers.authorization;
-  console.log('received token: ',token);
+  const authorizationHeader = req.headers.authorization;
+  console.log('Received authorization header:', authorizationHeader);
 
+  if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // Extract the token without the "Bearer " prefix
+  const token = authorizationHeader.substring(7);
+  console.log('Received token:', token);
+  
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
