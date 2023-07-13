@@ -15,7 +15,7 @@ const config = require('./config-test');
 const router = express.Router();
 
 const { getAccessTokenFromStorage, getAccessToken } = require('./routes/hs_auth');
-
+const { verifyToken } = require('./routes/users');
 const environment = process.env.NODE_ENV || 'development';
 const environmentConfig = config[environment];
 
@@ -47,7 +47,7 @@ const pool = new Pool({
   app.use('/users', userRouter.router);
   
 
-  app.get('/protected', (req, res) => {
+  app.get('/protected', verifyToken, (req, res) => {
     try{
       return res.json({ message: 'You are authorized' });
     } catch (error) {
