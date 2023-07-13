@@ -46,8 +46,9 @@ const pool = new Pool({
   app.use('/extract', extractRouter.router);
   app.use('/users', userRouter.router);
   
+  app.use('/protected', verifyToken);
 
-  app.get('/protected', verifyToken, (req, res) => {
+  app.get('/protected', (req, res) => {
     try{
       return res.json({ message: 'You are authorized' });
     } catch (error) {

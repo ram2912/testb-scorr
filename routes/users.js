@@ -25,16 +25,6 @@ router.get('/:userId', async (req, res) => {
   // ...
 });
 
-// ... other user-specific routes ...
-// POST /users/login - User login
-router.get('/protected', (req, res) => {
-  try{
-    return res.json({ message: 'You are authorized' });
-  } catch (error) {
-    console.error('Error during signup:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -58,12 +48,7 @@ router.post('/login', async (req, res) => {
 
     // Password is valid, generate a JWT token
     const token = jwt.sign({ userId: user.id }, 'your-secret-key');
-
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true, // Set to true if serving over HTTPS
-      // maxAge: expirationTime, // Set the expiration time if needed
-    });
+    res.setHeader('Set-Cookie', `token=${token}; HttpOnly; Secure; SameSite=Strict`);
 
     // Return the token and user details
     return res.status(200).json({ token, user });
